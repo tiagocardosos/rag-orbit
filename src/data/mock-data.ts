@@ -99,6 +99,16 @@ export const mockRadarData = [
   { metric: 'MRR', fixed_size: 0.0, recursive: 0.0, sentence: 0.0, semantic: 0.0 },
 ];
 
+export const mockCorpusStats = {
+  total_words: 187420,
+  total_phrases: 12840,
+  total_sentences: 8960,
+  total_pages: 405,
+  total_documents: 4,
+  total_characters: 1124520,
+  avg_chunk_size: 669,
+};
+
 export const mockGoldenStats = {
   total: 231,
   factual: 139,
