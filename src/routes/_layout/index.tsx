@@ -28,14 +28,14 @@ function DashboardPage() {
       </h1>
 
       {/* Solar System Hero */}
-      <div className="glass rounded-xl border border-border p-4 sm:p-6">
+      <div className="glass border border-neon/10 p-4 sm:p-6">
         <SolarSystem />
       </div>
 
       {/* Terminal Zone */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Mission Log */}
-        <div className="lg:col-span-2 terminal-block rounded-xl border border-border p-4 sm:p-5">
+        <div className="lg:col-span-2 terminal-block border border-neon/10 p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
             <span className="h-2 w-2 rounded-full bg-neon animate-pulse-glow" />
             <span className="font-mono text-xs text-neon uppercase tracking-widest">
@@ -102,7 +102,7 @@ function DashboardPage() {
             <Link
               key={a.cmd}
               to={a.to}
-              className="group flex items-center gap-3 p-4 rounded-lg border border-border bg-terminal hover:border-neon transition-all duration-200 hover:glow-neon"
+              className="group flex items-center gap-3 p-4 border border-border bg-terminal hover:border-neon transition-all duration-200 hover:glow-neon"
             >
               <a.icon className="h-5 w-5 text-muted-foreground group-hover:text-neon transition-colors" />
               <span className="font-mono text-sm text-terminal-foreground flex-1">
