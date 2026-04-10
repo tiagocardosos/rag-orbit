@@ -85,7 +85,7 @@ export function SolarSystem() {
   return (
     <div className="relative w-full">
       {/* Solar System — centered */}
-      <div className="relative aspect-square max-w-[520px] mx-auto overflow-hidden rounded-xl">
+      <div className="relative aspect-square max-w-[520px] mx-auto overflow-hidden">
         {/* Star field */}
         {stars.map((s, i) => (
           <div
