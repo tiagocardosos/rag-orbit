@@ -83,9 +83,9 @@ export function SolarSystem() {
   const hoveredData = hoveredPlanet ? planets.find((p) => p.strategy === hoveredPlanet) : null;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 items-center">
-      {/* Solar System */}
-      <div className="relative w-full aspect-square max-w-[520px] flex-shrink-0 overflow-hidden rounded-xl">
+    <div className="relative w-full">
+      {/* Solar System — centered */}
+      <div className="relative aspect-square max-w-[520px] mx-auto overflow-hidden rounded-xl">
         {/* Star field */}
         {stars.map((s, i) => (
           <div
@@ -202,8 +202,8 @@ export function SolarSystem() {
         ))}
       </div>
 
-      {/* Right Legend Panel */}
-      <div className="w-full lg:w-64 flex-shrink-0 space-y-3">
+      {/* Right Legend Panel — fixed to right edge */}
+      <div className="hidden lg:block absolute top-0 right-0 w-56 space-y-3">
         <p className="font-mono text-xs text-neon uppercase tracking-widest mb-2">
           Estratégias
         </p>
