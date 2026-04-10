@@ -159,6 +159,12 @@
     to { transform: rotate(360deg); }
   }
 
+  @keyframes sun-particle {
+    0% { transform: var(--base-transform, translate(0,0)) scale(1); opacity: 0.8; }
+    50% { transform: var(--base-transform, translate(0,0)) scale(1.5); opacity: 0.4; }
+    100% { transform: var(--base-transform, translate(0,0)) scale(0.8); opacity: 0.9; }
+  }
+
   .orbit-ring {
     transition: border-color 0.3s;
   }
