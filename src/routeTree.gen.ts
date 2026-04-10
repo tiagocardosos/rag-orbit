@@ -9,50 +9,296 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutResultadosRouteImport } from './routes/_layout/resultados'
+import { Route as LayoutGoldenSetRouteImport } from './routes/_layout/golden-set'
+import { Route as LayoutExperimentosRouteImport } from './routes/_layout/experimentos'
+import { Route as LayoutDocumentosRouteImport } from './routes/_layout/documentos'
+import { Route as LayoutColecoesRouteImport } from './routes/_layout/colecoes'
+import { Route as LayoutChunkingLabRouteImport } from './routes/_layout/chunking-lab'
+import { Route as LayoutChatRouteImport } from './routes/_layout/chat'
+import { Route as LayoutBuscaRouteImport } from './routes/_layout/busca'
+import { Route as LayoutExperimentosIndexRouteImport } from './routes/_layout/experimentos.index'
+import { Route as LayoutExperimentosIdRouteImport } from './routes/_layout/experimentos.$id'
 
-const IndexRoute = IndexRouteImport.update({
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/_layout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutResultadosRoute = LayoutResultadosRouteImport.update({
+  id: '/resultados',
+  path: '/resultados',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutGoldenSetRoute = LayoutGoldenSetRouteImport.update({
+  id: '/golden-set',
+  path: '/golden-set',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutExperimentosRoute = LayoutExperimentosRouteImport.update({
+  id: '/experimentos',
+  path: '/experimentos',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutDocumentosRoute = LayoutDocumentosRouteImport.update({
+  id: '/documentos',
+  path: '/documentos',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutColecoesRoute = LayoutColecoesRouteImport.update({
+  id: '/colecoes',
+  path: '/colecoes',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutChunkingLabRoute = LayoutChunkingLabRouteImport.update({
+  id: '/chunking-lab',
+  path: '/chunking-lab',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutChatRoute = LayoutChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutBuscaRoute = LayoutBuscaRouteImport.update({
+  id: '/busca',
+  path: '/busca',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutExperimentosIndexRoute = LayoutExperimentosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutExperimentosRoute,
+} as any)
+const LayoutExperimentosIdRoute = LayoutExperimentosIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => LayoutExperimentosRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof LayoutIndexRoute
+  '/busca': typeof LayoutBuscaRoute
+  '/chat': typeof LayoutChatRoute
+  '/chunking-lab': typeof LayoutChunkingLabRoute
+  '/colecoes': typeof LayoutColecoesRoute
+  '/documentos': typeof LayoutDocumentosRoute
+  '/experimentos': typeof LayoutExperimentosRouteWithChildren
+  '/golden-set': typeof LayoutGoldenSetRoute
+  '/resultados': typeof LayoutResultadosRoute
+  '/experimentos/$id': typeof LayoutExperimentosIdRoute
+  '/experimentos/': typeof LayoutExperimentosIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/busca': typeof LayoutBuscaRoute
+  '/chat': typeof LayoutChatRoute
+  '/chunking-lab': typeof LayoutChunkingLabRoute
+  '/colecoes': typeof LayoutColecoesRoute
+  '/documentos': typeof LayoutDocumentosRoute
+  '/golden-set': typeof LayoutGoldenSetRoute
+  '/resultados': typeof LayoutResultadosRoute
+  '/': typeof LayoutIndexRoute
+  '/experimentos/$id': typeof LayoutExperimentosIdRoute
+  '/experimentos': typeof LayoutExperimentosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_layout': typeof LayoutRouteWithChildren
+  '/_layout/busca': typeof LayoutBuscaRoute
+  '/_layout/chat': typeof LayoutChatRoute
+  '/_layout/chunking-lab': typeof LayoutChunkingLabRoute
+  '/_layout/colecoes': typeof LayoutColecoesRoute
+  '/_layout/documentos': typeof LayoutDocumentosRoute
+  '/_layout/experimentos': typeof LayoutExperimentosRouteWithChildren
+  '/_layout/golden-set': typeof LayoutGoldenSetRoute
+  '/_layout/resultados': typeof LayoutResultadosRoute
+  '/_layout/': typeof LayoutIndexRoute
+  '/_layout/experimentos/$id': typeof LayoutExperimentosIdRoute
+  '/_layout/experimentos/': typeof LayoutExperimentosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/busca'
+    | '/chat'
+    | '/chunking-lab'
+    | '/colecoes'
+    | '/documentos'
+    | '/experimentos'
+    | '/golden-set'
+    | '/resultados'
+    | '/experimentos/$id'
+    | '/experimentos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/busca'
+    | '/chat'
+    | '/chunking-lab'
+    | '/colecoes'
+    | '/documentos'
+    | '/golden-set'
+    | '/resultados'
+    | '/'
+    | '/experimentos/$id'
+    | '/experimentos'
+  id:
+    | '__root__'
+    | '/_layout'
+    | '/_layout/busca'
+    | '/_layout/chat'
+    | '/_layout/chunking-lab'
+    | '/_layout/colecoes'
+    | '/_layout/documentos'
+    | '/_layout/experimentos'
+    | '/_layout/golden-set'
+    | '/_layout/resultados'
+    | '/_layout/'
+    | '/_layout/experimentos/$id'
+    | '/_layout/experimentos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  LayoutRoute: typeof LayoutRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof LayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_layout/': {
+      id: '/_layout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/resultados': {
+      id: '/_layout/resultados'
+      path: '/resultados'
+      fullPath: '/resultados'
+      preLoaderRoute: typeof LayoutResultadosRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/golden-set': {
+      id: '/_layout/golden-set'
+      path: '/golden-set'
+      fullPath: '/golden-set'
+      preLoaderRoute: typeof LayoutGoldenSetRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/experimentos': {
+      id: '/_layout/experimentos'
+      path: '/experimentos'
+      fullPath: '/experimentos'
+      preLoaderRoute: typeof LayoutExperimentosRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/documentos': {
+      id: '/_layout/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof LayoutDocumentosRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/colecoes': {
+      id: '/_layout/colecoes'
+      path: '/colecoes'
+      fullPath: '/colecoes'
+      preLoaderRoute: typeof LayoutColecoesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/chunking-lab': {
+      id: '/_layout/chunking-lab'
+      path: '/chunking-lab'
+      fullPath: '/chunking-lab'
+      preLoaderRoute: typeof LayoutChunkingLabRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/chat': {
+      id: '/_layout/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof LayoutChatRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/busca': {
+      id: '/_layout/busca'
+      path: '/busca'
+      fullPath: '/busca'
+      preLoaderRoute: typeof LayoutBuscaRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/experimentos/': {
+      id: '/_layout/experimentos/'
+      path: '/'
+      fullPath: '/experimentos/'
+      preLoaderRoute: typeof LayoutExperimentosIndexRouteImport
+      parentRoute: typeof LayoutExperimentosRoute
+    }
+    '/_layout/experimentos/$id': {
+      id: '/_layout/experimentos/$id'
+      path: '/$id'
+      fullPath: '/experimentos/$id'
+      preLoaderRoute: typeof LayoutExperimentosIdRouteImport
+      parentRoute: typeof LayoutExperimentosRoute
     }
   }
 }
 
+interface LayoutExperimentosRouteChildren {
+  LayoutExperimentosIdRoute: typeof LayoutExperimentosIdRoute
+  LayoutExperimentosIndexRoute: typeof LayoutExperimentosIndexRoute
+}
+
+const LayoutExperimentosRouteChildren: LayoutExperimentosRouteChildren = {
+  LayoutExperimentosIdRoute: LayoutExperimentosIdRoute,
+  LayoutExperimentosIndexRoute: LayoutExperimentosIndexRoute,
+}
+
+const LayoutExperimentosRouteWithChildren =
+  LayoutExperimentosRoute._addFileChildren(LayoutExperimentosRouteChildren)
+
+interface LayoutRouteChildren {
+  LayoutBuscaRoute: typeof LayoutBuscaRoute
+  LayoutChatRoute: typeof LayoutChatRoute
+  LayoutChunkingLabRoute: typeof LayoutChunkingLabRoute
+  LayoutColecoesRoute: typeof LayoutColecoesRoute
+  LayoutDocumentosRoute: typeof LayoutDocumentosRoute
+  LayoutExperimentosRoute: typeof LayoutExperimentosRouteWithChildren
+  LayoutGoldenSetRoute: typeof LayoutGoldenSetRoute
+  LayoutResultadosRoute: typeof LayoutResultadosRoute
+  LayoutIndexRoute: typeof LayoutIndexRoute
+}
+
+const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutBuscaRoute: LayoutBuscaRoute,
+  LayoutChatRoute: LayoutChatRoute,
+  LayoutChunkingLabRoute: LayoutChunkingLabRoute,
+  LayoutColecoesRoute: LayoutColecoesRoute,
+  LayoutDocumentosRoute: LayoutDocumentosRoute,
+  LayoutExperimentosRoute: LayoutExperimentosRouteWithChildren,
+  LayoutGoldenSetRoute: LayoutGoldenSetRoute,
+  LayoutResultadosRoute: LayoutResultadosRoute,
+  LayoutIndexRoute: LayoutIndexRoute,
+}
+
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  LayoutRoute: LayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
