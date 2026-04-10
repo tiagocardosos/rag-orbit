@@ -78,6 +78,7 @@ function getPlanetSize(chunks: number): number {
 
 export function SolarSystem() {
   const [hoveredPlanet, setHoveredPlanet] = useState<ChunkingStrategy | null>(null);
+  const [hoveredSun, setHoveredSun] = useState(false);
   const stars = useMemo(() => generateStars(80), []);
 
   const hoveredData = hoveredPlanet ? planets.find((p) => p.strategy === hoveredPlanet) : null;
@@ -117,14 +118,57 @@ export function SolarSystem() {
         ))}
 
         {/* Sun */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-          <div className="sun-core w-20 h-20 sm:w-24 sm:h-24 rounded-full flex flex-col items-center justify-center">
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+          onMouseEnter={() => setHoveredSun(true)}
+          onMouseLeave={() => setHoveredSun(false)}
+        >
+          <div
+            className={`sun-core w-20 h-20 sm:w-24 sm:h-24 rounded-full flex flex-col items-center justify-center transition-all duration-300 cursor-default ${
+              hoveredSun ? "scale-[1.3]" : ""
+            }`}
+            style={{
+              boxShadow: hoveredSun
+                ? "0 0 40px oklch(0.75 0.2 145 / 0.6), 0 0 80px oklch(0.75 0.2 145 / 0.3)"
+                : undefined,
+            }}
+          >
             <span className="font-mono text-xs sm:text-sm font-bold text-neon-foreground tracking-wider">
               RAG
             </span>
             <span className="font-mono text-[9px] sm:text-[10px] text-neon-foreground/70">
               {totalChunks} chunks
             </span>
+          </div>
+
+          {/* Corpus Stats Card */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 w-64 bg-black/80 backdrop-blur-md border border-neon/20 p-4 z-50 transition-all duration-200 pointer-events-none"
+            style={{
+              top: hoveredSun ? "calc(100% + 12px)" : "calc(100% + 8px)",
+              opacity: hoveredSun ? 1 : 0,
+            }}
+          >
+            <p className="font-mono text-[10px] text-neon uppercase tracking-widest mb-2 text-center">
+              Corpus Stats
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+              {[
+                { label: "Palavras", value: mockCorpusStats.total_words.toLocaleString() },
+                { label: "Frases", value: mockCorpusStats.total_phrases.toLocaleString() },
+                { label: "Sentenças", value: mockCorpusStats.total_sentences.toLocaleString() },
+                { label: "Páginas", value: mockCorpusStats.total_pages.toLocaleString() },
+                { label: "Documentos", value: mockCorpusStats.total_documents.toLocaleString() },
+                { label: "Caracteres", value: mockCorpusStats.total_characters.toLocaleString() },
+                { label: "Avg Chunk", value: `${mockCorpusStats.avg_chunk_size} chars` },
+                { label: "Chunks", value: totalChunks.toLocaleString() },
+              ].map((s) => (
+                <div key={s.label} className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground">{s.label}</span>
+                  <span className="font-mono text-[10px] text-neon font-bold">{s.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
