@@ -61,10 +61,6 @@ function TypingButton({ cmd, to, icon: Icon }: { cmd: string; to: string; icon: 
 function DashboardPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground font-mono">
-        <span className="text-neon">$</span> dashboard_matrix
-      </h1>
-
       {/* Solar System Hero */}
       <div className="glass border border-neon/10 p-4 sm:p-6">
         <SolarSystem />
