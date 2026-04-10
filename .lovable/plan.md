@@ -1,52 +1,37 @@
 
 
-# RAG Orbit — Renomear + Trail de Cometa
+# Plano — README do Projeto + DOCS do Dashboard
 
-## Resumo
+## 1. Criar `README.md` na raiz do projeto
 
-Renomear o projeto para **RAG Orbit**, remover o texto "dashboard_matrix", e adicionar rastros de cometa nos planetas orbitando.
+README acadêmico para o mestrado com:
 
-## Mudanças
+- **Título**: RAG Orbit — Chunking Lab
+- **Descrição**: Plataforma de experimentação e avaliação comparativa de estratégias de chunking para RAG (Retrieval-Augmented Generation), desenvolvida como parte de dissertação de mestrado.
+- **Autores**: Tiago Cardoso Soares e Alan Tulio Lino Gonçalves
+- **Motivação / Contexto acadêmico**: Avaliação de 5 estratégias de chunking (Fixed-Size, Recursive, Sentence, Semantic, Structure-Aware) aplicadas a documentos EMBRAPII e Currículos Lattes
+- **Funcionalidades**: Listagem das páginas — Solar System overview, Coleções, Documentos, Chunking Lab, Experimentos, Resultados, Golden Set, Busca, Chat
+- **Tech Stack**: TanStack Start, React 19, Tailwind CSS v4, Vite 7, shadcn/ui
+- **Métricas RAGAS**: Faithfulness, Answer Relevancy, Context Precision, Context Recall, Answer Correctness
+- **Como rodar**: `bun install` + `bun run dev`
+- **Estrutura de diretórios** simplificada
+- **Licença**: placeholder para escolha posterior
 
-### 1. Renomear projeto para "RAG Orbit"
+## 2. Criar `DOCS/dashboard.md`
 
-- **`src/components/AppSidebar.tsx`** — Trocar "RAG Chunking Lab" por "RAG Orbit" no header da sidebar
-- **`src/routes/_layout/index.tsx`** — Remover o `<h1>` com "dashboard_matrix" completamente
-- **`src/components/SolarSystem.tsx`** — Manter "RAG" no sol (já está correto)
+Documentação técnica do dashboard com:
 
-### 2. Trail/rastro de cometa nos planetas
+- **Visão geral**: Explicação do sistema solar como metáfora visual — sol = corpus RAG, planetas = estratégias de chunking
+- **Páginas**: Descrição de cada rota e seu propósito
+- **Tipos de dados**: Explicação das interfaces (Collection, Document, Chunk, Experiment, GoldenQuestion, etc.)
+- **Estratégias de chunking**: Tabela com as 5 estratégias, suas cores e descrições
+- **Métricas**: O que cada métrica RAGAS avalia
+- **Mock data**: Explicação de que os dados são simulados, com estrutura em `src/data/mock-data.ts`
+- **Componentes principais**: SolarSystem, MetricBoxPlot, CommandDock, AppLayout, AppSidebar
+- **Tema visual**: Matrix Academic — cores, glassmorphism, JetBrains Mono
 
-Usar pseudo-elementos CSS com gradiente radial que segue cada planeta na órbita, criando um efeito de cauda luminosa.
+## Arquivos criados
 
-- **`src/components/SolarSystem.tsx`** — Adicionar um elemento `div` atrás de cada planeta com `box-shadow` alongado e opacidade degradê, usando a cor da estratégia. O trail será feito com múltiplos "pontos fantasma" posicionados com `transform` ligeiramente atrasados na rotação, ou via CSS `box-shadow` com spread direcional.
-
-- **`src/styles.css`** — Adicionar classe `.planet-trail` que aplica uma sombra alongada na direção oposta ao movimento:
-  ```css
-  .planet-trail {
-    position: relative;
-  }
-  .planet-trail::after {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 200%; height: 100%;
-    transform: translateX(-100%) translateY(-50%);
-    background: linear-gradient(to left, var(--trail-color) 0%, transparent 100%);
-    opacity: 0.4;
-    filter: blur(4px);
-    pointer-events: none;
-  }
-  ```
-
-### 3. Atualizar memória
-
-- Atualizar `mem://index.md` com o novo nome "RAG Orbit"
-
-## Arquivos afetados
-
-1. `src/components/AppSidebar.tsx` — nome do projeto
-2. `src/routes/_layout/index.tsx` — remover h1 dashboard_matrix
-3. `src/components/SolarSystem.tsx` — adicionar trail nos planetas
-4. `src/styles.css` — CSS do trail de cometa
-5. `mem://index.md` — atualizar nome
+1. `README.md` — raiz do projeto
+2. `DOCS/dashboard.md` — documentação do dashboard
 
