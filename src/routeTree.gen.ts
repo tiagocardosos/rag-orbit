@@ -19,6 +19,7 @@ import { Route as LayoutColecoesRouteImport } from './routes/_layout/colecoes'
 import { Route as LayoutChunkingLabRouteImport } from './routes/_layout/chunking-lab'
 import { Route as LayoutChatRouteImport } from './routes/_layout/chat'
 import { Route as LayoutBuscaRouteImport } from './routes/_layout/busca'
+import { Route as LayoutExperimentosIndexRouteImport } from './routes/_layout/experimentos.index'
 import { Route as LayoutExperimentosIdRouteImport } from './routes/_layout/experimentos.$id'
 
 const LayoutRoute = LayoutRouteImport.update({
@@ -70,6 +71,11 @@ const LayoutBuscaRoute = LayoutBuscaRouteImport.update({
   path: '/busca',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutExperimentosIndexRoute = LayoutExperimentosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LayoutExperimentosRoute,
+} as any)
 const LayoutExperimentosIdRoute = LayoutExperimentosIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/golden-set': typeof LayoutGoldenSetRoute
   '/resultados': typeof LayoutResultadosRoute
   '/experimentos/$id': typeof LayoutExperimentosIdRoute
+  '/experimentos/': typeof LayoutExperimentosIndexRoute
 }
 export interface FileRoutesByTo {
   '/busca': typeof LayoutBuscaRoute
@@ -94,11 +101,11 @@ export interface FileRoutesByTo {
   '/chunking-lab': typeof LayoutChunkingLabRoute
   '/colecoes': typeof LayoutColecoesRoute
   '/documentos': typeof LayoutDocumentosRoute
-  '/experimentos': typeof LayoutExperimentosRouteWithChildren
   '/golden-set': typeof LayoutGoldenSetRoute
   '/resultados': typeof LayoutResultadosRoute
   '/': typeof LayoutIndexRoute
   '/experimentos/$id': typeof LayoutExperimentosIdRoute
+  '/experimentos': typeof LayoutExperimentosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +120,7 @@ export interface FileRoutesById {
   '/_layout/resultados': typeof LayoutResultadosRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/experimentos/$id': typeof LayoutExperimentosIdRoute
+  '/_layout/experimentos/': typeof LayoutExperimentosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +135,7 @@ export interface FileRouteTypes {
     | '/golden-set'
     | '/resultados'
     | '/experimentos/$id'
+    | '/experimentos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/busca'
@@ -134,11 +143,11 @@ export interface FileRouteTypes {
     | '/chunking-lab'
     | '/colecoes'
     | '/documentos'
-    | '/experimentos'
     | '/golden-set'
     | '/resultados'
     | '/'
     | '/experimentos/$id'
+    | '/experimentos'
   id:
     | '__root__'
     | '/_layout'
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/_layout/resultados'
     | '/_layout/'
     | '/_layout/experimentos/$id'
+    | '/_layout/experimentos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -230,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutBuscaRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/experimentos/': {
+      id: '/_layout/experimentos/'
+      path: '/'
+      fullPath: '/experimentos/'
+      preLoaderRoute: typeof LayoutExperimentosIndexRouteImport
+      parentRoute: typeof LayoutExperimentosRoute
+    }
     '/_layout/experimentos/$id': {
       id: '/_layout/experimentos/$id'
       path: '/$id'
@@ -242,10 +259,12 @@ declare module '@tanstack/react-router' {
 
 interface LayoutExperimentosRouteChildren {
   LayoutExperimentosIdRoute: typeof LayoutExperimentosIdRoute
+  LayoutExperimentosIndexRoute: typeof LayoutExperimentosIndexRoute
 }
 
 const LayoutExperimentosRouteChildren: LayoutExperimentosRouteChildren = {
   LayoutExperimentosIdRoute: LayoutExperimentosIdRoute,
+  LayoutExperimentosIndexRoute: LayoutExperimentosIndexRoute,
 }
 
 const LayoutExperimentosRouteWithChildren =
