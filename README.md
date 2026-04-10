@@ -13,6 +13,10 @@
 
 Desenvolvido como parte de dissertação de mestrado.
 
+## 📸 Screenshot
+
+![Dashboard — Solar System](public/screenshots/dashboard.png)
+
 ## 👥 Autores
 
 - **Tiago Cardoso Soares**
