@@ -6,6 +6,47 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Lege
 import { Trophy, BarChart3 } from "lucide-react";
 import { mockResultsHeatmap, mockWilcoxonResults, mockVictoryRanking, mockRadarData, mockExperiments } from "@/data/mock-data";
 import { STRATEGY_COLORS, STRATEGY_LABELS, METRIC_LABELS } from "@/lib/types";
+import { MetricBoxPlot } from "@/components/MetricBoxPlot";
+import type { ChunkingStrategy } from "@/lib/types";
+
+const boxPlotData: Record<string, { strategy: ChunkingStrategy; min: number; q1: number; median: number; q3: number; max: number }[]> = {
+  faithfulness: [
+    { strategy: 'fixed_size', min: 0.0, q1: 0.683, median: 1.0, q3: 1.0, max: 1.0 },
+    { strategy: 'recursive', min: 0.0, q1: 0.833, median: 1.0, q3: 1.0, max: 1.0 },
+    { strategy: 'sentence', min: 0.0, q1: 0.825, median: 1.0, q3: 1.0, max: 1.0 },
+    { strategy: 'semantic', min: 0.0, q1: 0.800, median: 1.0, q3: 1.0, max: 1.0 },
+  ],
+  answer_relevancy: [
+    { strategy: 'fixed_size', min: 0.0, q1: 0.538, median: 0.691, q3: 0.843, max: 1.0 },
+    { strategy: 'recursive', min: 0.0, q1: 0.584, median: 0.720, q3: 0.856, max: 1.0 },
+    { strategy: 'sentence', min: 0.0, q1: 0.587, median: 0.721, q3: 0.856, max: 1.0 },
+    { strategy: 'semantic', min: 0.0, q1: 0.595, median: 0.729, q3: 0.863, max: 1.0 },
+  ],
+  context_precision: [
+    { strategy: 'fixed_size', min: 0.0, q1: 0.756, median: 0.950, q3: 1.0, max: 1.0 },
+    { strategy: 'recursive', min: 0.0, q1: 0.750, median: 0.917, q3: 1.0, max: 1.0 },
+    { strategy: 'sentence', min: 0.0, q1: 0.756, median: 1.0, q3: 1.0, max: 1.0 },
+    { strategy: 'semantic', min: 0.0, q1: 0.750, median: 0.950, q3: 1.0, max: 1.0 },
+  ],
+  context_recall: [
+    { strategy: 'fixed_size', min: 0.0, q1: 0.0, median: 1.0, q3: 1.0, max: 1.0 },
+    { strategy: 'recursive', min: 0.0, q1: 0.0, median: 1.0, q3: 1.0, max: 1.0 },
+    { strategy: 'sentence', min: 0.0, q1: 1.0, median: 1.0, q3: 1.0, max: 1.0 },
+    { strategy: 'semantic', min: 0.0, q1: 0.875, median: 1.0, q3: 1.0, max: 1.0 },
+  ],
+  answer_correctness: [
+    { strategy: 'fixed_size', min: 0.0, q1: 0.360, median: 0.638, q3: 0.915, max: 1.0 },
+    { strategy: 'recursive', min: 0.0, q1: 0.385, median: 0.651, q3: 0.917, max: 1.0 },
+    { strategy: 'sentence', min: 0.0, q1: 0.444, median: 0.679, q3: 0.914, max: 1.0 },
+    { strategy: 'semantic', min: 0.0, q1: 0.355, median: 0.609, q3: 0.863, max: 1.0 },
+  ],
+  mrr: [
+    { strategy: 'fixed_size', min: 0.0, q1: 0.0, median: 0.0, q3: 1.0, max: 1.0 },
+    { strategy: 'recursive', min: 0.0, q1: 0.0, median: 0.0, q3: 1.0, max: 1.0 },
+    { strategy: 'sentence', min: 0.0, q1: 0.0, median: 0.0, q3: 1.0, max: 1.0 },
+    { strategy: 'semantic', min: 0.0, q1: 0.0, median: 0.0, q3: 1.0, max: 1.0 },
+  ],
+};
 
 export const Route = createFileRoute("/_layout/resultados")({
   component: ResultadosPage,
