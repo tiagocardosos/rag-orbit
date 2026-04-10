@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { FileText, FlaskConical, Star, ChevronRight } from "lucide-react";
 import { SolarSystem } from "@/components/SolarSystem";
 import { mockRecentExperiments } from "@/data/mock-data";
@@ -17,6 +18,43 @@ function ProgressBar({ value, color }: { value: number; color: string }) {
       {"█".repeat(filled)}
       <span style={{ opacity: 0.2 }}>{"░".repeat(empty)}</span>
     </span>
+  );
+}
+
+function TypingButton({ cmd, to, icon: Icon }: { cmd: string; to: string; icon: React.ComponentType<{ className?: string }> }) {
+  const [displayText, setDisplayText] = useState(cmd);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleMouseEnter = () => {
+    if (isTyping) return;
+    setIsTyping(true);
+    setDisplayText("");
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayText(cmd.slice(0, i));
+      if (i >= cmd.length) {
+        clearInterval(interval);
+        setIsTyping(false);
+      }
+    }, 40);
+  };
+
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-3 p-4 border border-border bg-terminal hover:border-neon transition-all duration-200 hover:glow-neon"
+      onMouseEnter={handleMouseEnter}
+    >
+      <Icon className="h-5 w-5 text-muted-foreground group-hover:text-neon transition-colors" />
+      <span className="font-mono text-sm text-terminal-foreground flex-1">
+        <span className="text-neon">$</span> {displayText}
+        <span className="terminal-cursor ml-0.5 group-hover:inline hidden">
+          _
+        </span>
+      </span>
+      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-neon transition-colors" />
+    </Link>
   );
 }
 
@@ -94,26 +132,9 @@ function DashboardPage() {
           <span className="font-mono text-xs text-neon uppercase tracking-widest">
             Quick Launch
           </span>
-          {[
-            { cmd: "nova_ingestao", to: "/documentos", icon: FileText },
-            { cmd: "rodar_experimento", to: "/experimentos", icon: FlaskConical },
-            { cmd: "ver_resultados", to: "/resultados", icon: Star },
-          ].map((a) => (
-            <Link
-              key={a.cmd}
-              to={a.to}
-              className="group flex items-center gap-3 p-4 border border-border bg-terminal hover:border-neon transition-all duration-200 hover:glow-neon"
-            >
-              <a.icon className="h-5 w-5 text-muted-foreground group-hover:text-neon transition-colors" />
-              <span className="font-mono text-sm text-terminal-foreground flex-1">
-                <span className="text-neon">$</span> {a.cmd}
-                <span className="terminal-cursor ml-0.5 group-hover:inline hidden">
-                  _
-                </span>
-              </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-neon transition-colors" />
-            </Link>
-          ))}
+          <TypingButton cmd="nova_ingestao" to="/documentos" icon={FileText} />
+          <TypingButton cmd="rodar_experimento" to="/experimentos" icon={FlaskConical} />
+          <TypingButton cmd="ver_resultados" to="/resultados" icon={Star} />
         </div>
       </div>
     </div>

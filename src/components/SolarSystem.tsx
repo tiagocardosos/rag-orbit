@@ -53,7 +53,6 @@ const positionClasses: Record<string, string> = {
   "bottom-right": "bottom-2 right-2 sm:bottom-4 sm:right-4",
 };
 
-// Generate random star positions once
 function generateStars(count: number) {
   const stars: { x: number; y: number; size: number; delay: number; duration: number }[] = [];
   for (let i = 0; i < count; i++) {
@@ -68,7 +67,6 @@ function generateStars(count: number) {
   return stars;
 }
 
-// Planet size based on chunk count (min 24px, max 44px)
 function getPlanetSize(chunks: number): number {
   const minChunks = Math.min(...planets.map((p) => p.chunks));
   const maxChunks = Math.max(...planets.map((p) => p.chunks));
@@ -76,12 +74,45 @@ function getPlanetSize(chunks: number): number {
   return 24 + ratio * 20;
 }
 
+/** Mini sparkline SVG showing how one strategy compares across all strategies for a metric */
+function MiniSparkline({ metricKey, currentStrategy }: { metricKey: string; currentStrategy: ChunkingStrategy }) {
+  const values = planets.map((p) => (p.metrics as Record<string, number>)[metricKey]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const w = 32;
+  const h = 12;
+
+  const points = values
+    .map((v, i) => {
+      const x = (i / (values.length - 1)) * w;
+      const y = h - ((v - min) / range) * h;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  const currentIdx = planets.findIndex((p) => p.strategy === currentStrategy);
+  const cx = (currentIdx / (values.length - 1)) * w;
+  const cy = h - ((values[currentIdx] - min) / range) * h;
+  const color = STRATEGY_COLORS[currentStrategy];
+
+  return (
+    <svg width={w} height={h} className="flex-shrink-0">
+      <polyline
+        points={points}
+        fill="none"
+        stroke="oklch(0.5 0.02 250)"
+        strokeWidth="1"
+      />
+      <circle cx={cx} cy={cy} r="2" fill={color} />
+    </svg>
+  );
+}
+
 export function SolarSystem() {
   const [hoveredPlanet, setHoveredPlanet] = useState<ChunkingStrategy | null>(null);
   const [hoveredSun, setHoveredSun] = useState(false);
   const stars = useMemo(() => generateStars(80), []);
-
-  const hoveredData = hoveredPlanet ? planets.find((p) => p.strategy === hoveredPlanet) : null;
 
   return (
     <div className="relative w-full">
@@ -124,28 +155,28 @@ export function SolarSystem() {
           onMouseLeave={() => setHoveredSun(false)}
         >
           <div
-            className={`sun-core w-20 h-20 sm:w-24 sm:h-24 rounded-full flex flex-col items-center justify-center transition-all duration-300 cursor-default ${
-              hoveredSun ? "scale-[1.3]" : ""
+            className={`sun-core w-20 h-20 sm:w-28 sm:h-28 rounded-full flex flex-col items-center justify-center transition-all duration-300 cursor-default ${
+              hoveredSun ? "scale-[1.6]" : ""
             }`}
             style={{
               boxShadow: hoveredSun
-                ? "0 0 40px oklch(0.75 0.2 145 / 0.6), 0 0 80px oklch(0.75 0.2 145 / 0.3)"
+                ? "0 0 60px oklch(0.75 0.2 145 / 0.7), 0 0 120px oklch(0.75 0.2 145 / 0.35)"
                 : undefined,
             }}
           >
-            <span className="font-mono text-xs sm:text-sm font-bold text-neon-foreground tracking-wider">
+            <span className="font-mono text-sm sm:text-base font-bold text-neon-foreground tracking-wider">
               RAG
             </span>
-            <span className="font-mono text-[9px] sm:text-[10px] text-neon-foreground/70">
+            <span className="font-mono text-[9px] sm:text-[11px] text-neon-foreground/70">
               {totalChunks} chunks
             </span>
           </div>
 
           {/* Corpus Stats Card */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 w-64 bg-black/80 backdrop-blur-md border border-neon/20 p-4 z-50 transition-all duration-200 pointer-events-none"
+            className="absolute left-1/2 -translate-x-1/2 w-72 bg-black/85 backdrop-blur-md border border-neon/20 p-4 z-50 transition-all duration-200 pointer-events-none"
             style={{
-              top: hoveredSun ? "calc(100% + 12px)" : "calc(100% + 8px)",
+              top: hoveredSun ? "calc(100% + 16px)" : "calc(100% + 8px)",
               opacity: hoveredSun ? 1 : 0,
             }}
           >
@@ -232,7 +263,7 @@ export function SolarSystem() {
         {hudStats.map((s) => (
           <div
             key={s.label}
-            className={`absolute ${positionClasses[s.position]} flex items-center gap-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md glow-neon`}
+            className={`absolute ${positionClasses[s.position]} flex items-center gap-2 px-2 py-1.5 sm:px-3 sm:py-2 glow-neon`}
             style={{ backgroundColor: "oklch(0.13 0.03 260 / 0.7)" }}
           >
             <s.icon className="h-3 w-3 sm:h-4 sm:w-4 text-neon" />
@@ -246,7 +277,7 @@ export function SolarSystem() {
         ))}
       </div>
 
-      {/* Right Legend Panel — fixed to right edge */}
+      {/* Right Legend Panel */}
       <div className="hidden lg:block absolute top-0 right-0 w-56 space-y-3">
         <p className="font-mono text-xs text-neon uppercase tracking-widest mb-2">
           Estratégias
@@ -257,7 +288,7 @@ export function SolarSystem() {
           return (
             <div
               key={p.strategy}
-              className={`rounded-lg border p-3 transition-all duration-300 cursor-pointer ${
+              className={`border p-3 transition-all duration-300 cursor-pointer ${
                 isActive ? "glow-neon-strong" : ""
               }`}
               style={{
@@ -287,14 +318,15 @@ export function SolarSystem() {
               >
                 <div className="pt-2 space-y-1 border-t" style={{ borderColor: `${color}20` }}>
                   {Object.entries(p.metrics).map(([key, val]) => (
-                    <div key={key} className="flex justify-between items-center">
-                      <span className="text-[10px] text-muted-foreground capitalize">
+                    <div key={key} className="flex justify-between items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground capitalize flex-1">
                         {key.replace(/_/g, " ")}
                       </span>
+                      <MiniSparkline metricKey={key} currentStrategy={p.strategy} />
                       <div className="flex items-center gap-1.5">
-                        <div className="w-16 h-1 rounded-full overflow-hidden" style={{ backgroundColor: `${color}20` }}>
+                        <div className="w-12 h-1 overflow-hidden" style={{ backgroundColor: `${color}20` }}>
                           <div
-                            className="h-full rounded-full"
+                            className="h-full"
                             style={{ width: `${val * 100}%`, backgroundColor: color }}
                           />
                         </div>
