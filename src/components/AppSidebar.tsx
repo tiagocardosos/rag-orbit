@@ -31,7 +31,7 @@ export function AppSidebar() {
         <Brain className="h-6 w-6 text-primary shrink-0" />
         {!collapsed && (
           <span className="font-bold text-sm text-foreground whitespace-nowrap">
-            RAG Orbit
+            RAG Orbit — Chunking Lab
           </span>
         )}
       </div>
