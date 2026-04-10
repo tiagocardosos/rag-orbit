@@ -110,6 +110,9 @@ function MiniSparkline({ metricKey, currentStrategy }: { metricKey: string; curr
 }
 
 export function SolarSystem() {
+  const [hoveredPlanet, setHoveredPlanet] = useState<ChunkingStrategy | null>(null);
+  const [hoveredSun, setHoveredSun] = useState(false);
+  const stars = useMemo(() => generateStars(80), []);
   const sunParticles = useMemo(() => {
     const particles: { angle: number; dist: number; size: number; duration: number; delay: number }[] = [];
     for (let i = 0; i < 16; i++) {
