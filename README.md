@@ -1,5 +1,14 @@
 # 🪐 RAG Orbit — Chunking Lab
 
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TanStack Start](https://img.shields.io/badge/TanStack_Start-v1-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/start)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-runtime-F9F1E1?logo=bun&logoColor=black)](https://bun.sh/)
+[![License](https://img.shields.io/badge/License-A_definir-yellow)]()
+[![Status](https://img.shields.io/badge/Status-Em_desenvolvimento-green)]()
+
 **Plataforma de experimentação e avaliação comparativa de estratégias de chunking para sistemas RAG (Retrieval-Augmented Generation).**
 
 Desenvolvido como parte de dissertação de mestrado.
