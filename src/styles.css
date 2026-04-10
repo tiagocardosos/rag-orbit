@@ -163,6 +163,16 @@
     transition: border-color 0.3s;
   }
 
+  .star-twinkle {
+    animation: twinkle var(--duration, 3s) ease-in-out infinite;
+    opacity: 0;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.1; }
+    50% { opacity: 0.8; }
+  }
+
   .terminal-cursor {
     animation: blink 1s step-end infinite;
   }
