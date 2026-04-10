@@ -113,6 +113,19 @@ export function SolarSystem() {
   const [hoveredPlanet, setHoveredPlanet] = useState<ChunkingStrategy | null>(null);
   const [hoveredSun, setHoveredSun] = useState(false);
   const stars = useMemo(() => generateStars(80), []);
+  const sunParticles = useMemo(() => {
+    const particles: { angle: number; dist: number; size: number; duration: number; delay: number }[] = [];
+    for (let i = 0; i < 16; i++) {
+      particles.push({
+        angle: (i / 16) * 360,
+        dist: 50 + Math.random() * 30,
+        size: Math.random() * 3 + 1.5,
+        duration: Math.random() * 2 + 2,
+        delay: Math.random() * 2,
+      });
+    }
+    return particles;
+  }, []);
 
   return (
     <div className="relative w-full">
@@ -156,7 +169,7 @@ export function SolarSystem() {
         >
           <div
             className={`sun-core w-20 h-20 sm:w-28 sm:h-28 rounded-full flex flex-col items-center justify-center transition-all duration-300 cursor-default ${
-              hoveredSun ? "scale-[1.6]" : ""
+              hoveredSun ? "scale-[1.8]" : ""
             }`}
             style={{
               boxShadow: hoveredSun
@@ -171,6 +184,34 @@ export function SolarSystem() {
               {totalChunks} chunks
             </span>
           </div>
+
+          {/* Floating particles around sun on hover */}
+          {sunParticles.map((pt, i) => {
+            const rad = (pt.angle * Math.PI) / 180;
+            const x = Math.cos(rad) * pt.dist;
+            const y = Math.sin(rad) * pt.dist;
+            return (
+              <div
+                key={i}
+                className="absolute top-1/2 left-1/2 rounded-full transition-all"
+                style={{
+                  width: `${pt.size}px`,
+                  height: `${pt.size}px`,
+                  backgroundColor: "oklch(0.75 0.2 145)",
+                  transform: hoveredSun
+                    ? `translate(${x}px, ${y}px)`
+                    : "translate(0px, 0px)",
+                  opacity: hoveredSun ? 0.8 : 0,
+                  boxShadow: hoveredSun ? "0 0 6px oklch(0.75 0.2 145 / 0.6)" : "none",
+                  transitionDuration: `${pt.duration * 0.3}s`,
+                  transitionDelay: `${pt.delay * 0.1}s`,
+                  animation: hoveredSun
+                    ? `sun-particle ${pt.duration}s ease-in-out ${pt.delay}s infinite alternate`
+                    : "none",
+                }}
+              />
+            );
+          })}
 
           {/* Corpus Stats Card */}
           <div
