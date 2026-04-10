@@ -1,107 +1,121 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FolderOpen, FileText, FlaskConical, Star, ArrowRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { StrategyBadge } from "@/components/StrategyBadge";
-import { StatusBadge } from "@/components/StatusBadge";
-import { mockDashboardStats, mockRecentExperiments, mockRadarData } from "@/data/mock-data";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend } from "recharts";
+import { FileText, FlaskConical, Star, ChevronRight } from "lucide-react";
+import { SolarSystem } from "@/components/SolarSystem";
+import { mockRecentExperiments } from "@/data/mock-data";
 import { STRATEGY_COLORS } from "@/lib/types";
+import type { ChunkingStrategy } from "@/lib/types";
 
 export const Route = createFileRoute("/_layout/")({
   component: DashboardPage,
 });
 
-function DashboardPage() {
-  const stats = [
-    { label: "Coleções", value: mockDashboardStats.collections, icon: FolderOpen, color: "#0984e3" },
-    { label: "Documentos", value: mockDashboardStats.documents, icon: FileText, color: "#00ff41" },
-    { label: "Experimentos", value: mockDashboardStats.experiments_completed, icon: FlaskConical, color: "#ffd93d" },
-    { label: "Golden Questions", value: mockDashboardStats.golden_questions, icon: Star, color: "#a855f7" },
-  ];
+function ProgressBar({ value, color }: { value: number; color: string }) {
+  const filled = Math.round(value * 10);
+  const empty = 10 - filled;
+  return (
+    <span style={{ color }}>
+      {"█".repeat(filled)}
+      <span style={{ opacity: 0.2 }}>{"░".repeat(empty)}</span>
+    </span>
+  );
+}
 
+function DashboardPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-foreground font-mono">
+        <span className="text-neon">$</span> dashboard_matrix
+      </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <Card key={s.label} className="glass glow-neon border-border">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="rounded-lg p-3" style={{ backgroundColor: `${s.color}15` }}>
-                <s.icon className="h-6 w-6" style={{ color: s.color }} />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-                <p className="text-2xl font-bold text-foreground">{s.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Solar System Hero */}
+      <div className="glass rounded-xl border border-border p-4 sm:p-6">
+        <SolarSystem />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="glass border-border">
-          <CardHeader><CardTitle className="text-foreground">Últimos Experimentos</CardTitle></CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Estratégia</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ans. Correctness</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockRecentExperiments.map((e) => (
-                  <TableRow key={e.name}>
-                    <TableCell className="font-medium text-foreground">{e.name}</TableCell>
-                    <TableCell><StrategyBadge strategy={e.strategy} /></TableCell>
-                    <TableCell><StatusBadge status={e.status} /></TableCell>
-                    <TableCell className="font-mono text-foreground">{e.avg_answer_correctness?.toFixed(3) ?? "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card className="glass border-border">
-          <CardHeader><CardTitle className="text-foreground">Comparação Rápida</CardTitle></CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={280}>
-              <RadarChart data={mockRadarData}>
-                <PolarGrid stroke="oklch(0.3 0.02 255)" />
-                <PolarAngleAxis dataKey="metric" tick={{ fill: 'oklch(0.65 0.02 250)', fontSize: 10 }} />
-                <Radar name="Fixed-Size" dataKey="fixed_size" stroke={STRATEGY_COLORS.fixed_size} fill={STRATEGY_COLORS.fixed_size} fillOpacity={0.1} />
-                <Radar name="Recursive" dataKey="recursive" stroke={STRATEGY_COLORS.recursive} fill={STRATEGY_COLORS.recursive} fillOpacity={0.1} />
-                <Radar name="Sentence" dataKey="sentence" stroke={STRATEGY_COLORS.sentence} fill={STRATEGY_COLORS.sentence} fillOpacity={0.1} />
-                <Radar name="Semantic" dataKey="semantic" stroke={STRATEGY_COLORS.semantic} fill={STRATEGY_COLORS.semantic} fillOpacity={0.1} />
-                <Legend wrapperStyle={{ fontSize: '11px', color: 'oklch(0.65 0.02 250)' }} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="glass border-border">
-        <CardHeader><CardTitle className="text-foreground">Ações Rápidas</CardTitle></CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-auto py-4 border-border hover:border-primary hover:glow-neon" asChild>
-              <Link to="/documentos"><FileText className="mr-2 h-5 w-5" />Nova Ingestão<ArrowRight className="ml-auto h-4 w-4" /></Link>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 border-border hover:border-primary hover:glow-neon" asChild>
-              <Link to="/experimentos"><FlaskConical className="mr-2 h-5 w-5" />Rodar Experimento<ArrowRight className="ml-auto h-4 w-4" /></Link>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 border-border hover:border-primary hover:glow-neon" asChild>
-              <Link to="/resultados"><Star className="mr-2 h-5 w-5" />Ver Resultados<ArrowRight className="ml-auto h-4 w-4" /></Link>
-            </Button>
+      {/* Terminal Zone */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Mission Log */}
+        <div className="lg:col-span-2 terminal-block rounded-xl border border-border p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="h-2 w-2 rounded-full bg-neon animate-pulse-glow" />
+            <span className="font-mono text-xs text-neon uppercase tracking-widest">
+              Mission Log — Últimos Experimentos
+            </span>
           </div>
-        </CardContent>
-      </Card>
+          <div className="space-y-2">
+            {mockRecentExperiments.map((e) => {
+              const color = STRATEGY_COLORS[e.strategy as ChunkingStrategy];
+              const isRunning = e.status === "running";
+              return (
+                <div
+                  key={e.name}
+                  className="flex items-center gap-2 sm:gap-3 font-mono text-[11px] sm:text-xs"
+                >
+                  <span className="text-muted-foreground hidden sm:inline">
+                    [{e.created_at}]
+                  </span>
+                  <span style={{ color }}>▸</span>
+                  <span className="text-foreground truncate min-w-0 flex-1">
+                    {e.name}
+                  </span>
+                  {isRunning ? (
+                    <>
+                      <span className="text-muted-foreground">
+                        <ProgressBar value={0} color="oklch(0.65 0.02 250)" />
+                      </span>
+                      <span className="text-muted-foreground">—</span>
+                      <span className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full animate-pulse-glow" style={{ backgroundColor: color }} />
+                        <span style={{ color }}>running</span>
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span>
+                        <ProgressBar
+                          value={e.avg_answer_correctness ?? 0}
+                          color={color}
+                        />
+                      </span>
+                      <span className="text-foreground w-10 text-right">
+                        {e.avg_answer_correctness?.toFixed(3)}
+                      </span>
+                      <span className="text-neon">✓</span>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quick Launch */}
+        <div className="space-y-3">
+          <span className="font-mono text-xs text-neon uppercase tracking-widest">
+            Quick Launch
+          </span>
+          {[
+            { cmd: "nova_ingestao", to: "/documentos", icon: FileText },
+            { cmd: "rodar_experimento", to: "/experimentos", icon: FlaskConical },
+            { cmd: "ver_resultados", to: "/resultados", icon: Star },
+          ].map((a) => (
+            <Link
+              key={a.cmd}
+              to={a.to}
+              className="group flex items-center gap-3 p-4 rounded-lg border border-border bg-terminal hover:border-neon transition-all duration-200 hover:glow-neon"
+            >
+              <a.icon className="h-5 w-5 text-muted-foreground group-hover:text-neon transition-colors" />
+              <span className="font-mono text-sm text-terminal-foreground flex-1">
+                <span className="text-neon">$</span> {a.cmd}
+                <span className="terminal-cursor ml-0.5 group-hover:inline hidden">
+                  _
+                </span>
+              </span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-neon transition-colors" />
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
