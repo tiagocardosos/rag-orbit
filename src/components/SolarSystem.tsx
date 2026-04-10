@@ -254,7 +254,7 @@ export function SolarSystem() {
           return (
             <div
               key={p.strategy}
-              className={`absolute top-1/2 left-1/2 rounded-full orbit-anim-${p.orbitIndex}`}
+              className={`absolute top-1/2 left-1/2 rounded-full orbit-anim-${p.orbitIndex} pointer-events-none`}
               style={{
                 width: `${orbitSize}%`,
                 height: `${orbitSize}%`,
@@ -264,7 +264,7 @@ export function SolarSystem() {
               }}
             >
               <div
-                className="absolute left-1/2 cursor-pointer"
+                className="absolute left-1/2 cursor-pointer pointer-events-auto"
                 style={{ top: `-${planetSize / 2}px`, marginLeft: `-${planetSize / 2}px` }}
                 onMouseEnter={() => setHoveredPlanet(p.strategy)}
                 onMouseLeave={() => setHoveredPlanet(null)}
