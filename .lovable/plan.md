@@ -1,43 +1,52 @@
 
 
-# RAG Sun — Corpus Stats on Hover
+# RAG Orbit — Renomear + Trail de Cometa
 
-## Concept
+## Resumo
 
-When the user hovers over the central "RAG" sun, it scales up (like planets do) and reveals a detailed corpus/dataset stats panel — showing totals about the ingested PDFs/documents. The chunk count stays visible, and the new stats appear around or below the sun as a glass card.
+Renomear o projeto para **RAG Orbit**, remover o texto "dashboard_matrix", e adicionar rastros de cometa nos planetas orbitando.
 
-## Corpus Stats to Display
+## Mudanças
 
-1. **Total de Chunks** — 763 (already shown, keeps)
-2. **Total de Palavras** — ~187,420
-3. **Total de Frases** — ~12,840
-4. **Total de Sentenças** — ~8,960
-5. **Total de Páginas** — ~405
-6. **Total de Documentos** — 4
-7. **Total de Caracteres** — ~1,124,520
-8. **Tamanho Médio de Chunk** — ~669 chars
+### 1. Renomear projeto para "RAG Orbit"
 
-## Interaction
+- **`src/components/AppSidebar.tsx`** — Trocar "RAG Chunking Lab" por "RAG Orbit" no header da sidebar
+- **`src/routes/_layout/index.tsx`** — Remover o `<h1>` com "dashboard_matrix" completamente
+- **`src/components/SolarSystem.tsx`** — Manter "RAG" no sol (já está correto)
 
-- Default state: Sun shows "RAG" + "763 chunks" (current behavior)
-- Hover: Sun scales 1.3x, a glass stats card fades in below/around the sun showing all corpus metrics in a terminal-style grid (two columns of key-value pairs with neon styling)
-- The card uses the same glass/glow aesthetic as the planet legend
+### 2. Trail/rastro de cometa nos planetas
 
-## Changes
+Usar pseudo-elementos CSS com gradiente radial que segue cada planeta na órbita, criando um efeito de cauda luminosa.
 
-### 1. `src/data/mock-data.ts`
-- Add `mockCorpusStats` object with all the corpus-level stats (words, sentences, pages, characters, avg chunk size)
+- **`src/components/SolarSystem.tsx`** — Adicionar um elemento `div` atrás de cada planeta com `box-shadow` alongado e opacidade degradê, usando a cor da estratégia. O trail será feito com múltiplos "pontos fantasma" posicionados com `transform` ligeiramente atrasados na rotação, ou via CSS `box-shadow` com spread direcional.
 
-### 2. `src/components/SolarSystem.tsx`
-- Add `hoveredSun` state (boolean)
-- On sun `onMouseEnter`/`onMouseLeave`, toggle state
-- When hovered: sun scales 1.3x with stronger glow
-- Render a positioned stats card (absolute, centered below sun) that fades in with the corpus metrics
-- Stats displayed as a compact 2-column grid with icons and neon-accented values
+- **`src/styles.css`** — Adicionar classe `.planet-trail` que aplica uma sombra alongada na direção oposta ao movimento:
+  ```css
+  .planet-trail {
+    position: relative;
+  }
+  .planet-trail::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 200%; height: 100%;
+    transform: translateX(-100%) translateY(-50%);
+    background: linear-gradient(to left, var(--trail-color) 0%, transparent 100%);
+    opacity: 0.4;
+    filter: blur(4px);
+    pointer-events: none;
+  }
+  ```
 
-## Technical Details
+### 3. Atualizar memória
 
-- Sun hover uses `transition-all duration-300` + `scale-[1.3]` (same pattern as planets)
-- Stats card: `absolute` positioned, `backdrop-blur`, `border-neon/20`, fade-in via opacity transition
-- Mock values are realistic estimates based on the existing document data
+- Atualizar `mem://index.md` com o novo nome "RAG Orbit"
+
+## Arquivos afetados
+
+1. `src/components/AppSidebar.tsx` — nome do projeto
+2. `src/routes/_layout/index.tsx` — remover h1 dashboard_matrix
+3. `src/components/SolarSystem.tsx` — adicionar trail nos planetas
+4. `src/styles.css` — CSS do trail de cometa
+5. `mem://index.md` — atualizar nome
 
