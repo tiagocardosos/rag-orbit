@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { FolderOpen, FileText, FlaskConical, Star } from "lucide-react";
 import { STRATEGY_COLORS, STRATEGY_LABELS } from "@/lib/types";
 import type { ChunkingStrategy } from "@/lib/types";
-import { mockDashboardStats, mockChunkingLabStats } from "@/data/mock-data";
+import { mockDashboardStats, mockChunkingLabStats, mockCorpusStats } from "@/data/mock-data";
 
 interface PlanetData {
   strategy: ChunkingStrategy;
