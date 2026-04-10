@@ -269,6 +269,20 @@ export function SolarSystem() {
                 onMouseEnter={() => setHoveredPlanet(p.strategy)}
                 onMouseLeave={() => setHoveredPlanet(null)}
               >
+                {/* Comet Trail */}
+                <div
+                  className="planet-trail"
+                  style={{
+                    "--trail-color": color,
+                    width: `${planetSize}px`,
+                    height: `${planetSize}px`,
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    borderRadius: "50%",
+                    pointerEvents: "none",
+                  } as React.CSSProperties}
+                />
                 <Link to="/resultados">
                   <div
                     className={`rounded-full transition-all duration-300 flex items-center justify-center ${
