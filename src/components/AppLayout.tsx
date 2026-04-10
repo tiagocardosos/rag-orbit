@@ -1,13 +1,13 @@
 import { Outlet } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsTabletOrSmaller } from "@/hooks/use-mobile";
 
 export function AppLayout() {
-  const isMobile = useIsMobile();
+  const isSmallScreen = useIsTabletOrSmaller();
 
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
+    <SidebarProvider defaultOpen={!isSmallScreen}>
       <div className="min-h-screen flex w-full bg-grid-pattern">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
