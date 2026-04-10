@@ -151,6 +151,18 @@ function ResultadosPage() {
         </Card>
       </div>
 
+      {/* Box Plots - Grid 2x3 */}
+      <Card className="glass border-border">
+        <CardHeader><CardTitle className="text-foreground">Distribuição por Métrica — Box Plots</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(boxPlotData).map(([metric, data]) => (
+              <MetricBoxPlot key={metric} title={METRIC_LABELS[metric]} data={data} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Wilcoxon */}
       <Card className="glass border-border glow-neon">
         <CardHeader><CardTitle className="text-foreground">Comparações Estatísticas — Wilcoxon (p &lt; 0.05, Holm-Bonferroni)</CardTitle></CardHeader>
