@@ -24,7 +24,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RAG Chunking Lab" },
+      { title: "RAG Orbit — Chunking Lab" },
       { name: "description", content: "Sistema de avaliação comparativa de estratégias de chunking em RAG" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
