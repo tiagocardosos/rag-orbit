@@ -202,8 +202,8 @@ export function SolarSystem() {
         ))}
       </div>
 
-      {/* Right Legend Panel */}
-      <div className="w-full lg:w-64 flex-shrink-0 space-y-3">
+      {/* Right Legend Panel — fixed to right edge */}
+      <div className="hidden lg:block absolute top-0 right-0 w-56 space-y-3">
         <p className="font-mono text-xs text-neon uppercase tracking-widest mb-2">
           Estratégias
         </p>
