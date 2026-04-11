@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,26 +10,107 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { StrategyBadge } from "@/components/StrategyBadge";
-import { mockDocuments, mockChunks, mockCollections } from "@/data/mock-data";
-import type { ChunkingStrategy } from "@/lib/types";
+import { listCollections } from "@/services/collections";
+import { ingestDocument, listCollectionDocuments, listDocumentChunks } from "@/services/documents";
+import type { Collection, ChunkingStrategy, Chunk } from "@/lib/types";
 import { STRATEGY_LABELS } from "@/lib/types";
+import type { CollectionDocument } from "@/services/documents";
 
 export const Route = createFileRoute("/_layout/documentos")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    collection: typeof search.collection === "string" ? search.collection : "",
+  }),
   component: DocumentosPage,
 });
 
 function DocumentosPage() {
-  const [strategy, setStrategy] = useState<ChunkingStrategy>("fixed_size");
-  const [showChunks, setShowChunks] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const { collection: collectionId } = Route.useSearch();
+  const navigate = Route.useNavigate();
 
-  const handleIngest = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Documento ingerido com sucesso!");
-    }, 1500);
+  const setCollectionId = (id: string) => {
+    navigate({ search: { collection: id }, replace: true });
+  };
+
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [strategy, setStrategy] = useState<ChunkingStrategy>("fixed_size");
+  const [chunkSize, setChunkSize] = useState(512);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [ingesting, setIngesting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [documents, setDocuments] = useState<CollectionDocument[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+
+  const [showChunks, setShowChunks] = useState(false);
+  const [chunksLoading, setChunksLoading] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<CollectionDocument | null>(null);
+  const [chunks, setChunks] = useState<Chunk[]>([]);
+
+  // Carrega coleções; se nenhuma está na URL, define a primeira como padrão
+  useEffect(() => {
+    listCollections()
+      .then((cols) => {
+        setCollections(cols);
+        if (!collectionId && cols.length > 0) setCollectionId(cols[0].id);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Recarrega documentos sempre que a coleção na URL mudar
+  useEffect(() => {
+    if (!collectionId) { setDocuments([]); return; }
+    setDocsLoading(true);
+    listCollectionDocuments(collectionId)
+      .then(setDocuments)
+      .catch(() => {})
+      .finally(() => setDocsLoading(false));
+  }, [collectionId]);
+
+  const handleFileSelect = (file: File) => setSelectedFile(file);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  };
+
+  const handleIngest = async () => {
+    if (!selectedFile) { toast.error("Selecione um arquivo."); return; }
+    if (!collectionId) { toast.error("Selecione uma coleção."); return; }
+
+    setIngesting(true);
+    try {
+      const result = await ingestDocument({
+        file: selectedFile,
+        collection_id: collectionId,
+        chunking_strategy: strategy,
+        chunk_size: chunkSize,
+      });
+      toast.success(`Documento ingerido: ${result.total_chunks} chunks gerados.`);
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      const updated = await listCollectionDocuments(collectionId);
+      setDocuments(updated);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao ingerir documento.");
+    } finally {
+      setIngesting(false);
+    }
+  };
+
+  const handleViewChunks = async (doc: CollectionDocument) => {
+    setSelectedDoc(doc);
+    setChunks([]);
+    setShowChunks(true);
+    setChunksLoading(true);
+    try {
+      const result = await listDocumentChunks(doc.id);
+      setChunks(result.chunks);
+    } catch {
+      toast.error("Erro ao carregar chunks.");
+    } finally {
+      setChunksLoading(false);
+    }
   };
 
   return (
@@ -39,19 +120,37 @@ function DocumentosPage() {
       <Card className="glass border-border">
         <CardHeader><CardTitle className="text-foreground">Upload e Ingestão</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
+          <div
+            className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer"
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            onClick={() => fileInputRef.current?.click()}
+          >
             <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Arraste um arquivo ou clique para selecionar</p>
-            <p className="text-xs text-muted-foreground mt-1">.pdf, .xml, .json</p>
+            {selectedFile ? (
+              <p className="text-sm text-primary font-medium">{selectedFile.name}</p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">Arraste um arquivo ou clique para selecionar</p>
+                <p className="text-xs text-muted-foreground mt-1">.pdf, .xml, .json</p>
+              </>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.xml,.json"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm text-muted-foreground">Coleção</label>
-              <Select defaultValue="col-001">
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select value={collectionId} onValueChange={setCollectionId}>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
-                  {mockCollections.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {collections.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -66,12 +165,18 @@ function DocumentosPage() {
             </div>
             <div>
               <label className="text-sm text-muted-foreground">Chunk Size</label>
-              <Input type="number" defaultValue={512} min={64} max={2048} />
+              <Input
+                type="number"
+                value={chunkSize}
+                onChange={(e) => setChunkSize(Number(e.target.value))}
+                min={64}
+                max={2048}
+              />
             </div>
           </div>
 
-          <Button onClick={handleIngest} disabled={loading}>
-            {loading ? "Processando..." : "Ingerir Documento"}
+          <Button onClick={handleIngest} disabled={ingesting || !selectedFile}>
+            {ingesting ? "Processando..." : "Ingerir Documento"}
           </Button>
         </CardContent>
       </Card>
@@ -79,51 +184,67 @@ function DocumentosPage() {
       <Card className="glass border-border">
         <CardHeader><CardTitle className="text-foreground">Documentos Ingeridos</CardTitle></CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Arquivo</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Coleção</TableHead>
-                <TableHead>Estratégia</TableHead>
-                <TableHead>Chunks</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Ação</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockDocuments.map((doc) => (
-                <TableRow key={doc.id}>
-                  <TableCell className="font-mono text-sm text-foreground">{doc.filename}</TableCell>
-                  <TableCell><Badge variant="secondary">{doc.doc_type.toUpperCase()}</Badge></TableCell>
-                  <TableCell className="text-foreground">{doc.collection}</TableCell>
-                  <TableCell><StrategyBadge strategy={doc.strategy} /></TableCell>
-                  <TableCell className="text-foreground">{doc.total_chunks}</TableCell>
-                  <TableCell className="text-muted-foreground">{doc.created_at}</TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm" onClick={() => { setSelectedDoc(doc.filename); setShowChunks(true); }}>
-                      <Eye className="h-4 w-4 mr-1" />Chunks
-                    </Button>
-                  </TableCell>
+          {docsLoading ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Carregando documentos...</p>
+          ) : documents.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {collectionId ? "Nenhum documento nesta coleção." : "Selecione uma coleção para ver os documentos."}
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Arquivo</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Estratégia</TableHead>
+                  <TableHead>Chunks</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Ação</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {documents.map((doc) => (
+                  <TableRow key={doc.id}>
+                    <TableCell className="font-mono text-sm text-foreground">{doc.filename}</TableCell>
+                    <TableCell><Badge variant="secondary">{doc.doc_type.toUpperCase()}</Badge></TableCell>
+                    <TableCell><StrategyBadge strategy={doc.chunking_strategy} /></TableCell>
+                    <TableCell className="text-foreground">{doc.total_chunks}</TableCell>
+                    <TableCell className="text-muted-foreground">{doc.created_at.slice(0, 10)}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewChunks(doc)}>
+                        <Eye className="h-4 w-4 mr-1" />Chunks
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
       <Dialog open={showChunks} onOpenChange={setShowChunks}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
-          <DialogHeader><DialogTitle>Chunks de {selectedDoc}</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">{mockChunks.length} chunks | Estratégia: fixed_size</p>
-          <div className="space-y-3">
-            {mockChunks.map((chunk) => (
-              <div key={chunk.chunk_index} className="terminal-block rounded-lg p-4">
-                <div className="text-xs text-muted-foreground mb-2">Chunk #{chunk.chunk_index}</div>
-                <pre className="text-sm whitespace-pre-wrap leading-relaxed max-h-40 overflow-auto">{chunk.content}</pre>
+          <DialogHeader>
+            <DialogTitle>Chunks de {selectedDoc?.filename}</DialogTitle>
+          </DialogHeader>
+          {chunksLoading ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Carregando chunks...</p>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {chunks.length} chunks | Estratégia: {selectedDoc?.chunking_strategy}
+              </p>
+              <div className="space-y-3">
+                {chunks.map((chunk) => (
+                  <div key={chunk.chunk_index} className="terminal-block rounded-lg p-4">
+                    <div className="text-xs text-muted-foreground mb-2">Chunk #{chunk.chunk_index}</div>
+                    <pre className="text-sm whitespace-pre-wrap leading-relaxed max-h-40 overflow-auto">{chunk.content}</pre>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

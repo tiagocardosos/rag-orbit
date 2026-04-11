@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { FolderOpen, FileText, FlaskConical, Star } from "lucide-react";
 import { STRATEGY_COLORS, STRATEGY_LABELS } from "@/lib/types";
 import type { ChunkingStrategy } from "@/lib/types";
-import { mockDashboardStats, mockChunkingLabStats, mockCorpusStats } from "@/data/mock-data";
+import type { DashboardData, StrategyStats } from "@/services/dashboard";
 
 interface PlanetData {
   strategy: ChunkingStrategy;
@@ -17,34 +17,6 @@ interface PlanetData {
     answer_correctness: number;
   };
 }
-
-const planets: PlanetData[] = [
-  {
-    strategy: "fixed_size", orbitIndex: 1, chunks: mockChunkingLabStats.fixed_size.total_chunks,
-    metrics: { faithfulness: 0.847, answer_relevancy: 0.691, context_precision: 0.876, context_recall: 0.723, answer_correctness: 0.638 },
-  },
-  {
-    strategy: "recursive", orbitIndex: 2, chunks: mockChunkingLabStats.recursive.total_chunks,
-    metrics: { faithfulness: 0.891, answer_relevancy: 0.72, context_precision: 0.854, context_recall: 0.756, answer_correctness: 0.651 },
-  },
-  {
-    strategy: "sentence", orbitIndex: 3, chunks: mockChunkingLabStats.sentence.total_chunks,
-    metrics: { faithfulness: 0.878, answer_relevancy: 0.721, context_precision: 0.893, context_recall: 0.812, answer_correctness: 0.679 },
-  },
-  {
-    strategy: "semantic", orbitIndex: 4, chunks: mockChunkingLabStats.semantic.total_chunks,
-    metrics: { faithfulness: 0.862, answer_relevancy: 0.729, context_precision: 0.867, context_recall: 0.789, answer_correctness: 0.609 },
-  },
-];
-
-const totalChunks = planets.reduce((sum, p) => sum + p.chunks, 0);
-
-const hudStats = [
-  { label: "Coleções", value: mockDashboardStats.collections, icon: FolderOpen, position: "top-left" as const },
-  { label: "Documentos", value: mockDashboardStats.documents, icon: FileText, position: "top-right" as const },
-  { label: "Experimentos", value: mockDashboardStats.experiments_completed, icon: FlaskConical, position: "bottom-left" as const },
-  { label: "Golden Questions", value: mockDashboardStats.golden_questions, icon: Star, position: "bottom-right" as const },
-];
 
 const positionClasses: Record<string, string> = {
   "top-left": "top-2 left-2 sm:top-4 sm:left-4",
@@ -67,21 +39,45 @@ function generateStars(count: number) {
   return stars;
 }
 
-function getPlanetSize(chunks: number): number {
-  const minChunks = Math.min(...planets.map((p) => p.chunks));
-  const maxChunks = Math.max(...planets.map((p) => p.chunks));
-  const ratio = (chunks - minChunks) / (maxChunks - minChunks || 1);
+function toPlanet(s: StrategyStats, index: number): PlanetData {
+  return {
+    strategy: s.strategy as ChunkingStrategy,
+    orbitIndex: index + 1,
+    chunks: s.total_chunks,
+    metrics: {
+      faithfulness: s.avg_faithfulness,
+      answer_relevancy: s.avg_answer_relevancy,
+      context_precision: s.avg_context_precision,
+      context_recall: s.avg_context_recall,
+      answer_correctness: s.avg_answer_correctness,
+    },
+  };
+}
+
+function getPlanetSize(chunks: number, allChunks: number[]): number {
+  const min = Math.min(...allChunks);
+  const max = Math.max(...allChunks);
+  const ratio = (chunks - min) / (max - min || 1);
   return 24 + ratio * 20;
 }
 
-/** Mini sparkline SVG showing how one strategy compares across all strategies for a metric */
-function MiniSparkline({ metricKey, currentStrategy }: { metricKey: string; currentStrategy: ChunkingStrategy }) {
+function MiniSparkline({
+  metricKey,
+  currentStrategy,
+  planets,
+}: {
+  metricKey: string;
+  currentStrategy: ChunkingStrategy;
+  planets: PlanetData[];
+}) {
   const values = planets.map((p) => (p.metrics as Record<string, number>)[metricKey]);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
   const w = 32;
   const h = 12;
+
+  if (planets.length < 2) return null;
 
   const points = values
     .map((v, i) => {
@@ -92,24 +88,24 @@ function MiniSparkline({ metricKey, currentStrategy }: { metricKey: string; curr
     .join(" ");
 
   const currentIdx = planets.findIndex((p) => p.strategy === currentStrategy);
+  if (currentIdx === -1) return null;
   const cx = (currentIdx / (values.length - 1)) * w;
   const cy = h - ((values[currentIdx] - min) / range) * h;
-  const color = STRATEGY_COLORS[currentStrategy];
+  const color = STRATEGY_COLORS[currentStrategy] ?? "#888";
 
   return (
     <svg width={w} height={h} className="flex-shrink-0">
-      <polyline
-        points={points}
-        fill="none"
-        stroke="oklch(0.5 0.02 250)"
-        strokeWidth="1"
-      />
+      <polyline points={points} fill="none" stroke="oklch(0.5 0.02 250)" strokeWidth="1" />
       <circle cx={cx} cy={cy} r="2" fill={color} />
     </svg>
   );
 }
 
-export function SolarSystem() {
+interface SolarSystemProps {
+  data: DashboardData;
+}
+
+export function SolarSystem({ data }: SolarSystemProps) {
   const [hoveredPlanet, setHoveredPlanet] = useState<ChunkingStrategy | null>(null);
   const [hoveredSun, setHoveredSun] = useState(false);
   const stars = useMemo(() => generateStars(80), []);
@@ -126,6 +122,29 @@ export function SolarSystem() {
     }
     return particles;
   }, []);
+
+  const planets = useMemo(() => data.strategy_stats.map(toPlanet), [data.strategy_stats]);
+  const allChunks = planets.map((p) => p.chunks);
+  const totalChunks = data.corpus_stats.total_chunks;
+
+  const hudStats = [
+    { label: "Coleções", value: data.total_collections, icon: FolderOpen, position: "top-left" as const },
+    { label: "Documentos", value: data.total_documents, icon: FileText, position: "top-right" as const },
+    { label: "Experimentos", value: data.total_experiments, icon: FlaskConical, position: "bottom-left" as const },
+    { label: "Golden Questions", value: data.total_golden_questions, icon: Star, position: "bottom-right" as const },
+  ];
+
+  const corpus = data.corpus_stats;
+  const corpusRows = [
+    { label: "Documentos", value: corpus.total_documents.toLocaleString() },
+    { label: "Chunks", value: totalChunks.toLocaleString() },
+    { label: "Avg Chunk", value: `${corpus.avg_chunk_size} chars` },
+    { label: "Palavras", value: corpus.total_words > 0 ? corpus.total_words.toLocaleString() : "—" },
+    { label: "Sentenças", value: corpus.total_sentences > 0 ? corpus.total_sentences.toLocaleString() : "—" },
+    { label: "Frases", value: corpus.total_phrases > 0 ? corpus.total_phrases.toLocaleString() : "—" },
+    { label: "Páginas", value: corpus.total_pages > 0 ? corpus.total_pages.toLocaleString() : "—" },
+    { label: "Caracteres", value: corpus.total_characters > 0 ? corpus.total_characters.toLocaleString() : "—" },
+  ];
 
   return (
     <div className="relative w-full">
@@ -148,14 +167,14 @@ export function SolarSystem() {
           />
         ))}
 
-        {/* Orbit rings */}
-        {[1, 2, 3, 4].map((i) => (
+        {/* Orbit rings — dinâmicos por estratégia */}
+        {planets.map((p) => (
           <div
-            key={i}
+            key={p.strategy}
             className="orbit-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
             style={{
-              width: `${i * 20 + 14}%`,
-              height: `${i * 20 + 14}%`,
+              width: `${p.orbitIndex * 20 + 14}%`,
+              height: `${p.orbitIndex * 20 + 14}%`,
               border: "1px dashed oklch(0.75 0.2 145 / 0.1)",
             }}
           />
@@ -177,15 +196,13 @@ export function SolarSystem() {
                 : undefined,
             }}
           >
-            <span className="font-mono text-sm sm:text-base font-bold text-neon-foreground tracking-wider">
-              RAG
-            </span>
+            <span className="font-mono text-sm sm:text-base font-bold text-neon-foreground tracking-wider">RAG</span>
             <span className="font-mono text-[9px] sm:text-[11px] text-neon-foreground/70">
-              {totalChunks} chunks
+              {totalChunks.toLocaleString()} chunks
             </span>
           </div>
 
-          {/* Floating particles around sun on hover */}
+          {/* Floating particles */}
           {sunParticles.map((pt, i) => {
             const rad = (pt.angle * Math.PI) / 180;
             const x = Math.cos(rad) * pt.dist;
@@ -198,9 +215,7 @@ export function SolarSystem() {
                   width: `${pt.size}px`,
                   height: `${pt.size}px`,
                   backgroundColor: "oklch(0.75 0.2 145)",
-                  transform: hoveredSun
-                    ? `translate(${x}px, ${y}px)`
-                    : "translate(0px, 0px)",
+                  transform: hoveredSun ? `translate(${x}px, ${y}px)` : "translate(0px, 0px)",
                   opacity: hoveredSun ? 0.8 : 0,
                   boxShadow: hoveredSun ? "0 0 6px oklch(0.75 0.2 145 / 0.6)" : "none",
                   transitionDuration: `${pt.duration * 0.3}s`,
@@ -225,16 +240,7 @@ export function SolarSystem() {
               Corpus Stats
             </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-              {[
-                { label: "Palavras", value: mockCorpusStats.total_words.toLocaleString() },
-                { label: "Frases", value: mockCorpusStats.total_phrases.toLocaleString() },
-                { label: "Sentenças", value: mockCorpusStats.total_sentences.toLocaleString() },
-                { label: "Páginas", value: mockCorpusStats.total_pages.toLocaleString() },
-                { label: "Documentos", value: mockCorpusStats.total_documents.toLocaleString() },
-                { label: "Caracteres", value: mockCorpusStats.total_characters.toLocaleString() },
-                { label: "Avg Chunk", value: `${mockCorpusStats.avg_chunk_size} chars` },
-                { label: "Chunks", value: totalChunks.toLocaleString() },
-              ].map((s) => (
+              {corpusRows.map((s) => (
                 <div key={s.label} className="flex justify-between items-center">
                   <span className="text-[10px] text-muted-foreground">{s.label}</span>
                   <span className="font-mono text-[10px] text-neon font-bold">{s.value}</span>
@@ -246,10 +252,10 @@ export function SolarSystem() {
 
         {/* Planets */}
         {planets.map((p) => {
-          const color = STRATEGY_COLORS[p.strategy];
+          const color = STRATEGY_COLORS[p.strategy] ?? "#888888";
           const isHovered = hoveredPlanet === p.strategy;
           const orbitSize = p.orbitIndex * 20 + 14;
-          const planetSize = getPlanetSize(p.chunks);
+          const planetSize = getPlanetSize(p.chunks, allChunks);
 
           return (
             <div
@@ -323,9 +329,7 @@ export function SolarSystem() {
           >
             <s.icon className="h-3 w-3 sm:h-4 sm:w-4 text-neon" />
             <div>
-              <p className="font-mono text-sm sm:text-lg font-bold text-foreground leading-none">
-                {s.value}
-              </p>
+              <p className="font-mono text-sm sm:text-lg font-bold text-foreground leading-none">{s.value}</p>
               <p className="text-[8px] sm:text-[10px] text-muted-foreground">{s.label}</p>
             </div>
           </div>
@@ -334,18 +338,15 @@ export function SolarSystem() {
 
       {/* Right Legend Panel */}
       <div className="hidden lg:block absolute top-0 right-0 w-56 space-y-3">
-        <p className="font-mono text-xs text-neon uppercase tracking-widest mb-2">
-          Estratégias
-        </p>
+        <p className="font-mono text-xs text-neon uppercase tracking-widest mb-2">Estratégias</p>
         {planets.map((p) => {
-          const color = STRATEGY_COLORS[p.strategy];
+          const color = STRATEGY_COLORS[p.strategy] ?? "#888888";
           const isActive = hoveredPlanet === p.strategy;
+          const label = STRATEGY_LABELS[p.strategy] ?? p.strategy;
           return (
             <div
               key={p.strategy}
-              className={`border p-3 transition-all duration-300 cursor-pointer ${
-                isActive ? "glow-neon-strong" : ""
-              }`}
+              className={`border p-3 transition-all duration-300 cursor-pointer ${isActive ? "glow-neon-strong" : ""}`}
               style={{
                 backgroundColor: isActive ? "oklch(0.17 0.03 255 / 0.9)" : "oklch(0.13 0.03 260 / 0.5)",
                 borderColor: isActive ? `${color}80` : "oklch(0.3 0.02 255)",
@@ -358,15 +359,12 @@ export function SolarSystem() {
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}60` }}
                 />
-                <span className="font-mono text-xs font-bold" style={{ color }}>
-                  {STRATEGY_LABELS[p.strategy]}
-                </span>
+                <span className="font-mono text-xs font-bold" style={{ color }}>{label}</span>
                 <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-                  {p.chunks} chunks
+                  {p.chunks.toLocaleString()} chunks
                 </span>
               </div>
 
-              {/* Expand metrics when hovered */}
               <div
                 className="overflow-hidden transition-all duration-300"
                 style={{ maxHeight: isActive ? "200px" : "0", opacity: isActive ? 1 : 0 }}
@@ -377,13 +375,10 @@ export function SolarSystem() {
                       <span className="text-[10px] text-muted-foreground capitalize flex-1">
                         {key.replace(/_/g, " ")}
                       </span>
-                      <MiniSparkline metricKey={key} currentStrategy={p.strategy} />
+                      <MiniSparkline metricKey={key} currentStrategy={p.strategy} planets={planets} />
                       <div className="flex items-center gap-1.5">
                         <div className="w-12 h-1 overflow-hidden" style={{ backgroundColor: `${color}20` }}>
-                          <div
-                            className="h-full"
-                            style={{ width: `${val * 100}%`, backgroundColor: color }}
-                          />
+                          <div className="h-full" style={{ width: `${val * 100}%`, backgroundColor: color }} />
                         </div>
                         <span className="font-mono text-[10px] text-foreground w-8 text-right">
                           {val.toFixed(3)}

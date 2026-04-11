@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,33 +7,71 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Send, Settings } from "lucide-react";
-import { mockChatMessages, mockCollections } from "@/data/mock-data";
-import type { ChatMessage } from "@/lib/types";
+import { toast } from "sonner";
+import { listCollections } from "@/services/collections";
+import { ragChat } from "@/services/chat";
+import type { ChatMessage, Collection, RetrievalStrategy } from "@/lib/types";
 
 export const Route = createFileRoute("/_layout/chat")({
   component: ChatPage,
 });
 
 function ChatPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>(mockChatMessages);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [collectionId, setCollectionId] = useState<string>("");
+  const [retrievalStrategy, setRetrievalStrategy] = useState<RetrievalStrategy>("semantic");
+  const [topK, setTopK] = useState(5);
+  const [generatorModel, setGeneratorModel] = useState("gpt-4o-mini");
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [showConfig, setShowConfig] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  useEffect(() => {
+    listCollections()
+      .then((cols) => {
+        setCollections(cols);
+        if (cols.length > 0) setCollectionId(cols[0].id);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSend = async () => {
     if (!input.trim()) return;
-    setMessages((prev) => [...prev, { role: "user", content: input }]);
+    if (!collectionId) { toast.error("Selecione uma coleção na configuração."); return; }
+
+    const userMsg: ChatMessage = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
-    setTimeout(() => {
-      setMessages((prev) => [...prev, {
-        role: "assistant",
-        content: "Com base nos documentos analisados, posso informar que a EMBRAPII estabelece critérios específicos para esta questão. Os detalhes estão descritos no Manual de Operação, seção relevante ao tema consultado.",
-        context: [{ rank: 1, score: 0.91, content: "Trecho relevante do documento recuperado pelo sistema de busca vetorial...", source: "manual_operacao_embrapii_v6.pdf" }],
-        latency_ms: 287,
-      }]);
+
+    try {
+      const data = await ragChat({
+        query: userMsg.content,
+        collection_id: collectionId,
+        retrieval_strategy: retrievalStrategy,
+        top_k: topK,
+        generator_model: generatorModel,
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.answer,
+          context: data.context,
+          latency_ms: data.latency_ms,
+        },
+      ]);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro no chat.");
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Erro ao gerar resposta. Tente novamente." },
+      ]);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -50,11 +88,18 @@ function ChatPage() {
 
         <Card className="glass border-border flex-1 flex flex-col overflow-hidden">
           <CardContent className="flex-1 overflow-auto p-4 space-y-4">
+            {messages.length === 0 && (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground text-sm">
+                  {collectionId ? "Faça uma pergunta para começar." : "Configure uma coleção no painel lateral."}
+                </p>
+              </div>
+            )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-lg p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  {msg.context && (
+                  {msg.context && msg.context.length > 0 && (
                     <Accordion type="single" collapsible className="mt-3">
                       <AccordionItem value="context" className="border-border/50">
                         <AccordionTrigger className="text-xs py-1">
@@ -113,16 +158,16 @@ function ChatPage() {
           <CardContent className="space-y-4">
             <div>
               <label className="text-xs text-muted-foreground">Coleção</label>
-              <Select defaultValue="col-003">
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select value={collectionId} onValueChange={setCollectionId}>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
-                  {mockCollections.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {collections.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-xs text-muted-foreground">Busca</label>
-              <Select defaultValue="semantic">
+              <Select value={retrievalStrategy} onValueChange={(v) => setRetrievalStrategy(v as RetrievalStrategy)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="semantic">Semantic</SelectItem>
@@ -132,11 +177,11 @@ function ChatPage() {
             </div>
             <div>
               <label className="text-xs text-muted-foreground">top_k</label>
-              <Input type="number" defaultValue={5} min={1} max={20} />
+              <Input type="number" value={topK} onChange={(e) => setTopK(Number(e.target.value))} min={1} max={20} />
             </div>
             <div>
               <label className="text-xs text-muted-foreground">Modelo</label>
-              <Select defaultValue="gpt-4o-mini">
+              <Select value={generatorModel} onValueChange={setGeneratorModel}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>

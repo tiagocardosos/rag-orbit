@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText, FlaskConical, Star, ChevronRight } from "lucide-react";
 import { SolarSystem } from "@/components/SolarSystem";
-import { mockRecentExperiments } from "@/data/mock-data";
+import { fetchDashboard } from "@/services/dashboard";
+import type { DashboardData } from "@/services/dashboard";
 import { STRATEGY_COLORS } from "@/lib/types";
 import type { ChunkingStrategy } from "@/lib/types";
 
@@ -21,7 +22,15 @@ function ProgressBar({ value, color }: { value: number; color: string }) {
   );
 }
 
-function TypingButton({ cmd, to, icon: Icon }: { cmd: string; to: string; icon: React.ComponentType<{ className?: string }> }) {
+function TypingButton({
+  cmd,
+  to,
+  icon: Icon,
+}: {
+  cmd: string;
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
   const [displayText, setDisplayText] = useState(cmd);
   const [isTyping, setIsTyping] = useState(false);
 
@@ -49,21 +58,38 @@ function TypingButton({ cmd, to, icon: Icon }: { cmd: string; to: string; icon: 
       <Icon className="h-5 w-5 text-muted-foreground group-hover:text-neon transition-colors" />
       <span className="font-mono text-sm text-terminal-foreground flex-1">
         <span className="text-neon">$</span> {displayText}
-        <span className="terminal-cursor ml-0.5 group-hover:inline hidden">
-          _
-        </span>
+        <span className="terminal-cursor ml-0.5 group-hover:inline hidden">_</span>
       </span>
       <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-neon transition-colors" />
     </Link>
   );
 }
 
+function SolarSystemSkeleton() {
+  return (
+    <div className="relative aspect-square max-w-[520px] mx-auto flex items-center justify-center">
+      <div className="text-center space-y-2">
+        <div className="w-24 h-24 rounded-full mx-auto animate-pulse" style={{ backgroundColor: "oklch(0.75 0.2 145 / 0.15)" }} />
+        <p className="font-mono text-xs text-muted-foreground">Carregando dados...</p>
+      </div>
+    </div>
+  );
+}
+
 function DashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    fetchDashboard().then(setData).catch(() => {});
+  }, []);
+
+  const recentExperiments = data?.recent_experiments ?? [];
+
   return (
     <div className="space-y-6">
       {/* Solar System Hero */}
       <div className="glass border border-neon/10 p-4 sm:p-6">
-        <SolarSystem />
+        {data ? <SolarSystem data={data} /> : <SolarSystemSkeleton />}
       </div>
 
       {/* Terminal Zone */}
@@ -77,57 +103,54 @@ function DashboardPage() {
             </span>
           </div>
           <div className="space-y-2">
-            {mockRecentExperiments.map((e) => {
-              const color = STRATEGY_COLORS[e.strategy as ChunkingStrategy];
-              const isRunning = e.status === "running";
-              return (
-                <div
-                  key={e.name}
-                  className="flex items-center gap-2 sm:gap-3 font-mono text-[11px] sm:text-xs"
-                >
-                  <span className="text-muted-foreground hidden sm:inline">
-                    [{e.created_at}]
-                  </span>
-                  <span style={{ color }}>▸</span>
-                  <span className="text-foreground truncate min-w-0 flex-1">
-                    {e.name}
-                  </span>
-                  {isRunning ? (
-                    <>
-                      <span className="text-muted-foreground">
-                        <ProgressBar value={0} color="oklch(0.65 0.02 250)" />
-                      </span>
-                      <span className="text-muted-foreground">—</span>
-                      <span className="flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full animate-pulse-glow" style={{ backgroundColor: color }} />
-                        <span style={{ color }}>running</span>
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span>
-                        <ProgressBar
-                          value={e.avg_answer_correctness ?? 0}
-                          color={color}
-                        />
-                      </span>
-                      <span className="text-foreground w-10 text-right">
-                        {e.avg_answer_correctness?.toFixed(3)}
-                      </span>
-                      <span className="text-neon">✓</span>
-                    </>
-                  )}
-                </div>
-              );
-            })}
+            {recentExperiments.length === 0 ? (
+              <p className="font-mono text-xs text-muted-foreground">Nenhum experimento encontrado.</p>
+            ) : (
+              recentExperiments.map((e) => {
+                const color = STRATEGY_COLORS[e.strategy as ChunkingStrategy] ?? "#888888";
+                const isRunning = e.status === "running";
+                return (
+                  <div
+                    key={e.name}
+                    className="flex items-center gap-2 sm:gap-3 font-mono text-[11px] sm:text-xs"
+                  >
+                    <span className="text-muted-foreground hidden sm:inline">
+                      [{e.created_at.slice(0, 10)}]
+                    </span>
+                    <span style={{ color }}>▸</span>
+                    <span className="text-foreground truncate min-w-0 flex-1">{e.name}</span>
+                    {isRunning ? (
+                      <>
+                        <span className="text-muted-foreground">
+                          <ProgressBar value={0} color="oklch(0.65 0.02 250)" />
+                        </span>
+                        <span className="text-muted-foreground">—</span>
+                        <span className="flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full animate-pulse-glow" style={{ backgroundColor: color }} />
+                          <span style={{ color }}>running</span>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          <ProgressBar value={e.avg_answer_correctness ?? 0} color={color} />
+                        </span>
+                        <span className="text-foreground w-10 text-right">
+                          {e.avg_answer_correctness?.toFixed(3) ?? "—"}
+                        </span>
+                        <span className="text-neon">✓</span>
+                      </>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
         {/* Quick Launch */}
         <div className="space-y-3">
-          <span className="font-mono text-xs text-neon uppercase tracking-widest">
-            Quick Launch
-          </span>
+          <span className="font-mono text-xs text-neon uppercase tracking-widest">Quick Launch</span>
           <TypingButton cmd="nova_ingestao" to="/documentos" icon={FileText} />
           <TypingButton cmd="rodar_experimento" to="/experimentos" icon={FlaskConical} />
           <TypingButton cmd="ver_resultados" to="/resultados" icon={Star} />
