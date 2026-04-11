@@ -34,6 +34,7 @@ function DocumentosPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [strategy, setStrategy] = useState<ChunkingStrategy>("fixed_size");
   const [chunkSize, setChunkSize] = useState(512);
+  const [chunkOverlap, setChunkOverlap] = useState(50);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [ingesting, setIngesting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,6 +86,7 @@ function DocumentosPage() {
         collection_id: collectionId,
         chunking_strategy: strategy,
         chunk_size: chunkSize,
+        chunk_overlap: chunkOverlap,
       });
       toast.success(`Documento ingerido: ${result.total_chunks} chunks gerados.`);
       setSelectedFile(null);
@@ -144,7 +146,7 @@ function DocumentosPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-sm text-muted-foreground">Coleção</label>
               <Select value={collectionId} onValueChange={setCollectionId}>
@@ -171,6 +173,16 @@ function DocumentosPage() {
                 onChange={(e) => setChunkSize(Number(e.target.value))}
                 min={64}
                 max={2048}
+              />
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground">Chunk Overlap</label>
+              <Input
+                type="number"
+                value={chunkOverlap}
+                onChange={(e) => setChunkOverlap(Number(e.target.value))}
+                min={0}
+                max={512}
               />
             </div>
           </div>
