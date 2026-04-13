@@ -74,15 +74,46 @@ A qualidade de um sistema RAG depende fortemente de como os documentos são segm
 
 ## 🚀 Como Rodar
 
+### Desenvolvimento local
+
 ```bash
 # Instalar dependências
-bun install
+npm install
 
 # Iniciar servidor de desenvolvimento
-bun run dev
+npm run dev
 ```
 
-O servidor estará disponível em `http://localhost:3000`.
+O servidor estará disponível em `http://localhost:8080`.
+
+### Docker
+
+> Pré-requisito: Docker e Docker Compose instalados.
+
+```bash
+# Copiar e configurar variáveis de ambiente
+cp .env.example .env
+# Edite o .env se necessário (padrão: VITE_API_BASE_URL=http://localhost:8000)
+
+# Subir o container
+docker compose up
+```
+
+O servidor estará disponível em `http://localhost:8080`.
+
+O código-fonte é montado como volume, portanto alterações nos arquivos refletem automaticamente sem necessidade de rebuild (hot reload ativo).
+
+Para rodar em background:
+
+```bash
+docker compose up -d
+```
+
+Para parar:
+
+```bash
+docker compose down
+```
 
 ## 📁 Estrutura do Projeto
 
