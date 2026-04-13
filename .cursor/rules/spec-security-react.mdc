@@ -1,0 +1,124 @@
+---
+description: Security Spec — React + Vite (Frontend Gerado por LLM)
+globs: **/*.ts, **/*.tsx, **/*.d.ts
+alwaysApply: false
+---
+
+
+
+# Security Spec — React + Vite (Frontend Gerado por LLM)
+
+## Objetivo
+Definir regras mínimas de segurança para aplicações frontend em React/Vite geradas por LLMs, evitando vazamento de dados, tokens e falhas comuns como XSS, exposição de secrets e autenticação frágil.
+
+Este documento é intencionalmente **curto e operacional**.
+
+---
+
+## 1. Tokens e autenticação
+
+### Proibido
+- Armazenar tokens em:
+  - localStorage
+  - sessionStorage
+  - IndexedDB
+- Hardcode de tokens no código
+- Uso de service keys no frontend
+
+### Permitido
+- Token de acesso:
+  - Em memória (state / context)
+- Refresh token:
+  - Cookie HttpOnly
+  - Secure
+  - SameSite configurado
+
+Frontend **nunca** deve conhecer credenciais administrativas.
+
+---
+
+## 2. Variáveis de ambiente no Vite
+
+Regra crítica:
+- Tudo que começa com `VITE_` é **público**
+
+É proibido colocar em variáveis Vite:
+- Tokens privados
+- Service roles
+- URLs de banco com credenciais
+- Chaves secretas de terceiros
+
+Se precisa de segredo → **backend obrigatório**.
+
+---
+
+## 3. Integração com serviços (ex: Supabase)
+
+Regras:
+- Frontend só pode usar:
+  - Chaves públicas/anônimas
+- Segurança deve estar:
+  - No backend
+  - Em regras de acesso (ex: RLS)
+
+Nunca:
+- Usar `service_role`
+- Confiar que “ninguém verá o código”
+
+Código frontend é **sempre público**.
+
+---
+
+## 4. Proteção contra XSS
+
+Evitar:
+- `dangerouslySetInnerHTML`
+- Inserção direta de HTML do usuário
+- URLs dinâmicas sem validação
+
+Se HTML for inevitável:
+- Sanitizar explicitamente
+- Nunca renderizar conteúdo cru
+
+React ajuda, mas **não é blindagem total**.
+
+---
+
+## 5. Estado da aplicação e dados sensíveis
+
+Regras:
+- Não armazenar dados sensíveis no state global
+- Não expor payloads completos no console
+- Não persistir estado crítico no browser
+
+Frontend deve ser tratado como ambiente hostil.
+
+---
+
+## 6. Build e deploy
+
+Antes de produção:
+- Remover logs de debug
+- Desabilitar devtools
+- Não publicar source maps
+- Não expor arquivos `.env`
+
+O build final deve conter apenas:
+- HTML
+- CSS
+- JS minificado
+
+---
+
+## Checklist Rápido (React/Vite)
+
+Antes de publicar:
+
+- [ ] Existe token no código ou no VITE_?
+- [ ] Algum segredo está no frontend?
+- [ ] Tokens estão em localStorage?
+- [ ] Uso inseguro de HTML dinâmico?
+- [ ] Dependências são confiáveis?
+- [ ] Build removeu artefatos de debug?
+
+Se qualquer item falhar → **risco crítico**.

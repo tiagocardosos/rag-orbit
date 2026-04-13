@@ -1,0 +1,111 @@
+---
+description: Security Base Spec — Código Gerado por LLM (Mínimo Obrigatório)
+globs: **/*.ts, **/*.tsx, **/*.d.ts
+alwaysApply: false
+---
+
+# Security Base Spec — Código Gerado por LLM (Mínimo Obrigatório)
+
+## Objetivo
+Definir um conjunto mínimo e obrigatório de verificações de segurança para qualquer código, script, configuração ou infraestrutura gerada por LLMs, independentemente da linguagem, framework ou stack.
+
+Este documento deve ser aplicado a **todos os projetos**, inclusive MVPs.
+
+---
+
+## Princípios Invioláveis
+
+### 1. Segredos NUNCA no código
+É proibido:
+- Tokens
+- API Keys
+- Senhas
+- URLs com credenciais
+- Chaves privadas
+- Service roles ou credenciais administrativas
+
+Regras:
+- Segredos devem estar **exclusivamente** em variáveis de ambiente seguras ou secret managers.
+- Código gerado por LLM **não pode conter valores sensíveis hardcoded**.
+- Caso um serviço exija chave pública + privada, **somente a pública pode estar no cliente**.
+
+---
+
+### 2. Privilégio mínimo
+- Qualquer integração deve usar o **menor nível de permissão possível**.
+- Nunca usar credenciais administrativas em aplicações públicas.
+- Tokens devem ser:
+  - Escopados
+  - Temporários
+  - Revogáveis
+
+---
+
+### 3. Autenticação e autorização explícitas
+- Nenhuma operação sensível pode assumir usuário autenticado implicitamente.
+- Autenticação e autorização devem ser verificadas no **lado servidor**.
+- Frontend nunca decide permissões.
+
+---
+
+### 4. Validação e sanitização de entradas
+Todo input externo deve ser tratado como não confiável:
+- Dados de formulário
+- Headers
+- Query params
+- Payloads JSON
+- Webhooks
+- Arquivos
+
+Regras:
+- Validar tipo, formato e tamanho
+- Sanitizar strings antes de uso
+- Nunca confiar em validações apenas no frontend
+
+---
+
+### 5. Erros não podem vazar informação
+É proibido retornar em produção:
+- Stack traces
+- Mensagens de erro do banco
+- Queries SQL
+- Caminhos internos
+- Detalhes de infraestrutura
+
+Logs internos ≠ Resposta ao usuário.
+
+---
+
+### 6. Dependências e bibliotecas
+- Dependências devem ser:
+  - Existentes
+  - Mantidas
+  - Com comunidade ativa
+- Evitar bibliotecas “alucinadas” por LLM
+- Revisar permissões e escopo de SDKs
+
+---
+
+### 7. Código gerado por LLM exige revisão humana
+É obrigatório:
+- Revisão manual antes de produção
+- Análise estática quando possível
+- Testes de cenário negativo (inputs maliciosos)
+
+LLM **não é fonte confiável de segurança**.
+
+---
+
+## Checklist Rápido (obrigatório)
+
+Antes de aceitar código gerado por LLM:
+
+- [ ] Existe token, senha ou chave no código?
+- [ ] Alguma URL contém credencial?
+- [ ] Há validação de inputs?
+- [ ] Autenticação é feita no backend?
+- [ ] Permissões estão restritas?
+- [ ] Logs não expõem dados sensíveis?
+- [ ] Dependências são reais e confiáveis?
+
+Se qualquer resposta for **não**, o código **não pode ser usado**.
