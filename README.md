@@ -63,6 +63,24 @@ A qualidade de um sistema RAG depende fortemente de como os documentos são segm
 - **Resultados** — Heatmaps, box-plots, radar charts e testes estatísticos (Wilcoxon)
 - **Golden Set** — Gerenciamento das 231 perguntas de avaliação (factuais e inferenciais)
 
+## 🔗 Dependência de Backend
+
+O RAG Orbit é exclusivamente um frontend. Toda a lógica de ingestão, chunking, embeddings e avaliação é executada pela API backend:
+
+**[api-chunking-evaluation](https://github.com/tiagocardosos/api-chunking-evaluation)**
+
+| | |
+|---|---|
+| **Linguagem** | Python 3.12 |
+| **Framework** | FastAPI |
+| **Banco relacional** | PostgreSQL 16 |
+| **Banco vetorial** | Qdrant |
+| **Embeddings / Geração** | OpenAI (`text-embedding-3-small`, `gpt-4o-mini`) |
+| **Porta padrão** | `http://localhost:8000` |
+| **Docs interativas** | `http://localhost:8000/docs` |
+
+> O frontend não funcionará sem o backend em execução.
+
 ## 🛠️ Tech Stack
 
 - **Framework**: [TanStack Start](https://tanstack.com/start) v1 (React 19, SSR)
@@ -74,46 +92,53 @@ A qualidade de um sistema RAG depende fortemente de como os documentos são segm
 
 ## 🚀 Como Rodar
 
-### Desenvolvimento local
+### 1. Suba o backend primeiro
+
+Clone e inicie a API (requer Docker e uma chave OpenAI):
 
 ```bash
-# Instalar dependências
+git clone https://github.com/tiagocardosos/api-chunking-evaluation
+cd api-chunking-evaluation
+cp .env.example .env
+# Edite o .env e preencha OPENAI_API_KEY
+docker compose up -d
+```
+
+Confirme que o backend está saudável:
+
+```bash
+curl http://localhost:8000/health
+```
+
+### 2. Rode o frontend
+
+#### Desenvolvimento local
+
+```bash
+# Na raiz do orbit-rag
 npm install
 
-# Iniciar servidor de desenvolvimento
+# Copiar variáveis de ambiente
+cp .env.example .env
+# VITE_API_BASE_URL deve apontar para o backend (padrão: http://localhost:8000)
+
 npm run dev
 ```
 
 O servidor estará disponível em `http://localhost:8080`.
 
-### Docker
-
-> Pré-requisito: Docker e Docker Compose instalados.
+#### Docker
 
 ```bash
-# Copiar e configurar variáveis de ambiente
 cp .env.example .env
-# Edite o .env se necessário (padrão: VITE_API_BASE_URL=http://localhost:8000)
+# Confirme que VITE_API_BASE_URL=http://localhost:8000
 
-# Subir o container
-docker compose up
+docker compose up        # foreground
+docker compose up -d     # background
+docker compose down      # parar
 ```
 
-O servidor estará disponível em `http://localhost:8080`.
-
-O código-fonte é montado como volume, portanto alterações nos arquivos refletem automaticamente sem necessidade de rebuild (hot reload ativo).
-
-Para rodar em background:
-
-```bash
-docker compose up -d
-```
-
-Para parar:
-
-```bash
-docker compose down
-```
+O código-fonte é montado como volume — alterações refletem automaticamente via hot reload sem necessidade de rebuild.
 
 ## 📁 Estrutura do Projeto
 
@@ -132,7 +157,7 @@ src/
 │   └── mock-data.ts     # Dados simulados para todas as telas
 ├── lib/
 │   ├── types.ts         # Tipos TypeScript (interfaces, enums, constantes)
-│   └── utils.ts         # Utilitários (cn, etc.)
+│   └── utils.ts         # Utilitários (cn, fmtDate)
 ├── routes/              # Rotas (file-based routing)
 │   ├── __root.tsx       # Root layout (HTML shell)
 │   ├── _layout.tsx      # Layout com sidebar

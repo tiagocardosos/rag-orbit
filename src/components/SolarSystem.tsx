@@ -136,14 +136,14 @@ export function SolarSystem({ data }: SolarSystemProps) {
 
   const corpus = data.corpus_stats;
   const corpusRows = [
-    { label: "Documentos", value: corpus.total_documents.toLocaleString() },
-    { label: "Chunks", value: totalChunks.toLocaleString() },
+    { label: "Documentos", value: corpus.total_documents.toLocaleString("pt-BR") },
+    { label: "Chunks", value: totalChunks.toLocaleString("pt-BR") },
     { label: "Avg Chunk", value: `${corpus.avg_chunk_size} chars` },
-    { label: "Palavras", value: corpus.total_words > 0 ? corpus.total_words.toLocaleString() : "—" },
-    { label: "Sentenças", value: corpus.total_sentences > 0 ? corpus.total_sentences.toLocaleString() : "—" },
-    { label: "Frases", value: corpus.total_phrases > 0 ? corpus.total_phrases.toLocaleString() : "—" },
-    { label: "Páginas", value: corpus.total_pages > 0 ? corpus.total_pages.toLocaleString() : "—" },
-    { label: "Caracteres", value: corpus.total_characters > 0 ? corpus.total_characters.toLocaleString() : "—" },
+    { label: "Palavras", value: corpus.total_words > 0 ? corpus.total_words.toLocaleString("pt-BR") : "—" },
+    { label: "Sentenças", value: corpus.total_sentences > 0 ? corpus.total_sentences.toLocaleString("pt-BR") : "—" },
+    { label: "Frases", value: corpus.total_phrases > 0 ? corpus.total_phrases.toLocaleString("pt-BR") : "—" },
+    { label: "Páginas", value: corpus.total_pages > 0 ? corpus.total_pages.toLocaleString("pt-BR") : "—" },
+    { label: "Caracteres", value: corpus.total_characters > 0 ? corpus.total_characters.toLocaleString("pt-BR") : "—" },
   ];
 
   return (
@@ -198,7 +198,7 @@ export function SolarSystem({ data }: SolarSystemProps) {
           >
             <span className="font-mono text-sm sm:text-base font-bold text-neon-foreground tracking-wider">RAG</span>
             <span className="font-mono text-[9px] sm:text-[11px] text-neon-foreground/70">
-              {totalChunks.toLocaleString()} chunks
+              {totalChunks.toLocaleString("pt-BR")} chunks
             </span>
           </div>
 
@@ -361,7 +361,7 @@ export function SolarSystem({ data }: SolarSystemProps) {
                 />
                 <span className="font-mono text-xs font-bold" style={{ color }}>{label}</span>
                 <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-                  {p.chunks.toLocaleString()} chunks
+                  {p.chunks.toLocaleString("pt-BR")} chunks
                 </span>
               </div>
 
@@ -378,10 +378,10 @@ export function SolarSystem({ data }: SolarSystemProps) {
                       <MiniSparkline metricKey={key} currentStrategy={p.strategy} planets={planets} />
                       <div className="flex items-center gap-1.5">
                         <div className="w-12 h-1 overflow-hidden" style={{ backgroundColor: `${color}20` }}>
-                          <div className="h-full" style={{ width: `${val * 100}%`, backgroundColor: color }} />
+                          <div className="h-full" style={{ width: `${(val ?? 0) * 100}%`, backgroundColor: color }} />
                         </div>
                         <span className="font-mono text-[10px] text-foreground w-8 text-right">
-                          {val.toFixed(3)}
+                          {val != null ? val.toFixed(3) : "—"}
                         </span>
                       </div>
                     </div>

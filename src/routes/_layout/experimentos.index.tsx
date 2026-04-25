@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FlaskConical, Play, Eye, RefreshCw } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { FlaskConical, Play, Eye, RefreshCw, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { StrategyBadge } from "@/components/StrategyBadge";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -36,6 +37,8 @@ function ExperimentosPage() {
   const [experiments, setExperiments] = useState<LocalExperiment[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("list");
+  const [startedName, setStartedName] = useState<string | null>(null);
 
   const nameRef = useRef<HTMLInputElement>(null);
   const topKRef = useRef<HTMLInputElement>(null);
@@ -107,7 +110,7 @@ function ExperimentosPage() {
         golden_questions: goldenQuestions,
       });
 
-      toast.success(`Experimento "${name}" iniciado (${result.total_questions} perguntas).`);
+      setStartedName(name);
       loadExperiments();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao iniciar experimento.");
@@ -122,7 +125,7 @@ function ExperimentosPage() {
         <FlaskConical className="h-6 w-6 text-primary" />Experimentos
       </h1>
 
-      <Tabs defaultValue="list">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="new">Novo Experimento</TabsTrigger>
           <TabsTrigger value="list">Meus Experimentos</TabsTrigger>
@@ -261,6 +264,36 @@ function ExperimentosPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={startedName !== null} onOpenChange={(open) => { if (!open) setStartedName(null); }}>
+        <DialogContent className="glass border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <Clock className="h-5 w-5 text-primary" />
+              Experimento iniciado
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <p>
+              O experimento <span className="text-foreground font-medium">"{startedName}"</span> foi enviado para execução em background.
+            </p>
+            <p>
+              O tempo de conclusão varia conforme o tamanho do seu dataset e o número de perguntas. Experimentos com datasets grandes podem levar vários minutos.
+            </p>
+            <p>
+              Acompanhe o status na aba <span className="text-primary font-medium">Meus Experimentos</span>.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              className="bg-primary text-primary-foreground w-full"
+              onClick={() => { setStartedName(null); setActiveTab("list"); }}
+            >
+              Ver lista de experimentos
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

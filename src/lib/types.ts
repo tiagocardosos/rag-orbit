@@ -31,7 +31,7 @@ export const METRIC_LABELS: Record<string, string> = {
 
 export const STATUS_COLORS: Record<ExperimentStatus, string> = {
   pending: '#ffd93d',
-  running: '#00ff41',
+  running: '#38bdf8',
   completed: '#00ff41',
   failed: '#ff6b6b',
 };

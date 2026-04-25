@@ -6,6 +6,7 @@ import { fetchDashboard } from "@/services/dashboard";
 import type { DashboardData } from "@/services/dashboard";
 import { STRATEGY_COLORS } from "@/lib/types";
 import type { ChunkingStrategy } from "@/lib/types";
+import { fmtDate } from "@/lib/utils";
 
 export const Route = createFileRoute("/_layout/")({
   component: DashboardPage,
@@ -115,7 +116,7 @@ function DashboardPage() {
                     className="flex items-center gap-2 sm:gap-3 font-mono text-[11px] sm:text-xs"
                   >
                     <span className="text-muted-foreground hidden sm:inline">
-                      [{e.created_at.slice(0, 10)}]
+                      [{fmtDate(e.created_at)}]
                     </span>
                     <span style={{ color }}>▸</span>
                     <span className="text-foreground truncate min-w-0 flex-1">{e.name}</span>

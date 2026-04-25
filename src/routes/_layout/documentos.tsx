@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { StrategyBadge } from "@/components/StrategyBadge";
 import { listCollections } from "@/services/collections";
 import { ingestDocument, listCollectionDocuments, listDocumentChunks } from "@/services/documents";
+import { fmtDate } from "@/lib/utils";
 import type { Collection, ChunkingStrategy, Chunk } from "@/lib/types";
 import { STRATEGY_LABELS } from "@/lib/types";
 import type { CollectionDocument } from "@/services/documents";
@@ -221,7 +222,7 @@ function DocumentosPage() {
                     <TableCell><Badge variant="secondary">{doc.doc_type.toUpperCase()}</Badge></TableCell>
                     <TableCell><StrategyBadge strategy={doc.chunking_strategy} /></TableCell>
                     <TableCell className="text-foreground">{doc.total_chunks}</TableCell>
-                    <TableCell className="text-muted-foreground">{doc.created_at.slice(0, 10)}</TableCell>
+                    <TableCell className="text-muted-foreground">{fmtDate(doc.created_at)}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" onClick={() => handleViewChunks(doc)}>
                         <Eye className="h-4 w-4 mr-1" />Chunks

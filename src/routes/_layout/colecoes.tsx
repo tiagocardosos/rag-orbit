@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { FolderOpen, Plus, Trash2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { listCollections, createCollection, deleteCollection } from "@/services/collections";
+import { fmtDate } from "@/lib/utils";
 import type { Collection } from "@/lib/types";
 import { Link } from "@tanstack/react-router";
 
@@ -88,7 +89,7 @@ function ColecoesPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{col.created_at}</span>
+                  <span>{fmtDate(col.created_at)}</span>
                 </div>
               </CardContent>
               <CardFooter className="gap-2">
