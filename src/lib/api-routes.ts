@@ -28,4 +28,11 @@ export const API_ROUTES = {
     list: '/experiments',
     get: (id: string) => `/experiments/${id}`,
   },
+  analytics: {
+    strategies: '/analytics/strategies',
+    distributions: '/analytics/distributions',
+    statisticalTests: '/analytics/statistical-tests',
+    rankings: '/analytics/rankings',
+    temporal: '/analytics/temporal',
+  },
 } as const
